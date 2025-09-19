@@ -4,6 +4,7 @@ import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { ClipboardList, Target, BarChart3, Users, Award, TrendingUp, Star, ArrowRight } from 'lucide-react';
+import HeroCarousel from '@/components/HeroCarousel';
 
 const Home: React.FC = () => {
   const features = [
@@ -60,132 +61,72 @@ const Home: React.FC = () => {
 
   return (
     <div className="w-full">
-      {/* Web3 Hero Section */}
-      <section className="relative min-h-screen bg-gradient-to-br from-black via-purple-900 to-purple-700 text-white overflow-hidden">
-        {/* Glowing Orbit Background */}
-        <div className="absolute inset-0 opacity-20">
-          <svg
-            className="absolute top-1/4 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-96 h-96 animate-pulse"
-            viewBox="0 0 200 200"
-            xmlns="http://www.w3.org/2000/svg"
-          >
-            <defs>
-              <linearGradient id="gradient" x1="0%" y1="0%" x2="100%" y2="100%">
-                <stop offset="0%" stopColor="#a855f7" stopOpacity="0.8" />
-                <stop offset="100%" stopColor="#3b82f6" stopOpacity="0.3" />
-              </linearGradient>
-            </defs>
-            <circle
-              cx="100"
-              cy="100"
-              r="80"
-              fill="none"
-              stroke="url(#gradient)"
-              strokeWidth="2"
-              className="animate-spin"
-              style={{ animationDuration: '20s' }}
-            />
-            <circle
-              cx="100"
-              cy="100"
-              r="60"
-              fill="none"
-              stroke="url(#gradient)"
-              strokeWidth="1"
-              className="animate-spin"
-              style={{ animationDuration: '15s', animationDirection: 'reverse' }}
-            />
-          </svg>
+      {/* Hero Section with Carousel */}
+      <section className="relative min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-800 text-white overflow-hidden">
+        {/* Background Pattern */}
+        <div className="absolute inset-0 opacity-10">
+          <div className="absolute inset-0 bg-gradient-to-r from-purple-400/20 to-pink-400/20" />
         </div>
 
         <div className="relative z-10 container mx-auto px-4 pt-32 pb-20">
-          <div className="flex flex-col lg:flex-row items-center justify-between min-h-[80vh]">
-            <motion.div
-              className="lg:w-1/2 text-center lg:text-left mb-12 lg:mb-0"
-              variants={containerVariants}
-              initial="hidden"
-              animate="visible"
+          <div className="text-center mb-16">
+            {/* Hero Title */}
+            <motion.h1
+              className="text-4xl md:text-6xl lg:text-7xl font-bold mb-6 gradient-text leading-tight"
+              initial={{ opacity: 0, y: 30 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.8 }}
             >
-              <motion.h1
-                className="text-5xl md:text-7xl font-bold mb-6 gradient-text leading-tight"
-                variants={itemVariants}
-              >
-                Discover Your
-                <br />
-                Perfect Career Path
-              </motion.h1>
-              
-              <motion.p
-                className="text-xl md:text-2xl mb-8 opacity-80 max-w-2xl"
-                variants={itemVariants}
-              >
-                Personalized Career & Education Advisor for Jammu & Kashmir Students using cutting-edge AI technology
-              </motion.p>
-              
-              <motion.div
-                className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start"
-                variants={containerVariants}
-              >
-                <motion.div variants={itemVariants} whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
-                  <Button
-                    size="lg"
-                    asChild
-                    className="glassmorphism rounded-full text-lg px-8 py-6 text-white hover:bg-white/20 transition-all duration-300 group"
-                  >
-                    <Link to="/quiz" className="flex items-center space-x-2">
-                      <span>Get in Touch</span>
-                      <ArrowRight className="h-5 w-5 group-hover:translate-x-1 transition-transform duration-200" />
-                    </Link>
-                  </Button>
-                </motion.div>
-                
-                <motion.div variants={itemVariants} whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
-                  <Button
-                    size="lg"
-                    variant="outline"
-                    asChild
-                    className="rounded-full text-lg px-8 py-6 border-white/30 text-white hover:bg-white/10 transition-all duration-300"
-                  >
-                    <Link to="/dashboard">Learn More</Link>
-                  </Button>
-                </motion.div>
-              </motion.div>
-            </motion.div>
+              Your Personalized Career &<br />
+              Education Advisor
+            </motion.h1>
+            
+            <motion.p
+              className="text-lg md:text-xl lg:text-2xl mb-12 opacity-90 max-w-4xl mx-auto"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.8, delay: 0.2 }}
+            >
+              Helping J&K students choose the right stream, college, and career path through personalized guidance and comprehensive assessments
+            </motion.p>
 
+            {/* CTA Buttons */}
             <motion.div
-              className="lg:w-1/2 flex justify-center"
-              initial={{ opacity: 0, x: 50 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ duration: 0.8, delay: 0.5 }}
+              className="flex flex-col sm:flex-row gap-4 justify-center mb-16"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.8, delay: 0.4 }}
             >
-              <div className="relative">
-                <motion.div
-                  className="w-80 h-80 md:w-96 md:h-96 bg-gradient-to-br from-purple-500/20 to-blue-500/20 rounded-full glassmorphism"
-                  animate={{
-                    scale: [1, 1.1, 1],
-                    rotate: [0, 180, 360]
-                  }}
-                  transition={{
-                    duration: 20,
-                    repeat: Infinity,
-                    ease: "linear"
-                  }}
-                />
-                <motion.div
-                  className="absolute inset-8 bg-gradient-to-tr from-purple-400/30 to-pink-400/30 rounded-full glassmorphism"
-                  animate={{
-                    scale: [1.1, 1, 1.1],
-                    rotate: [360, 180, 0]
-                  }}
-                  transition={{
-                    duration: 15,
-                    repeat: Infinity,
-                    ease: "linear"
-                  }}
-                />
-              </div>
+              <Button
+                size="lg"
+                asChild
+                className="glassmorphism rounded-full text-lg px-8 py-6 text-white hover:bg-white/20 transition-all duration-300 group"
+              >
+                <Link to="/quiz" className="flex items-center space-x-2">
+                  <span>Start Your Journey</span>
+                  <ArrowRight className="h-5 w-5 group-hover:translate-x-1 transition-transform duration-200" />
+                </Link>
+              </Button>
+              
+              <Button
+                size="lg"
+                variant="outline"
+                asChild
+                className="rounded-full text-lg px-8 py-6 border-white/30 text-white hover:bg-white/10 transition-all duration-300"
+              >
+                <Link to="/dashboard">Explore Features</Link>
+              </Button>
             </motion.div>
           </div>
+
+          {/* Hero Carousel */}
+          <motion.div
+            initial={{ opacity: 0, y: 50 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8, delay: 0.6 }}
+          >
+            <HeroCarousel />
+          </motion.div>
         </div>
       </section>
 
