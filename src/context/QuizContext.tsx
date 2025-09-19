@@ -1,8 +1,7 @@
 import React, { createContext, useContext, useReducer, ReactNode } from 'react';
-import { QuizAnswer, QuizResult, UserProfile, College } from '../types';
+import { QuizAnswer, QuizResult, UserProfile } from '../types';
 import { quizQuestions, courseRecommendations, colleges } from '../data/quizData';
 import { jkColleges, vocationalCourses } from '../data/jkData';
-import { supabase } from '@/integrations/supabase/client';
 
 interface QuizState {
   currentQuestion: number;
@@ -28,7 +27,7 @@ const initialState: QuizState = {
 const QuizContext = createContext<{
   state: QuizState;
   dispatch: React.Dispatch<QuizAction>;
-  calculateResult: () => Promise<QuizResult>;
+  calculateResult: () => QuizResult;
 } | null>(null);
 
 function quizReducer(state: QuizState, action: QuizAction): QuizState {
@@ -72,8 +71,14 @@ function quizReducer(state: QuizState, action: QuizAction): QuizState {
 export function QuizProvider({ children }: { children: ReactNode }) {
   const [state, dispatch] = useReducer(quizReducer, initialState);
 
-  const calculateResult = async (): Promise<QuizResult> => {
-    // Extract user preferences from answers
+  const calculateResult = (): QuizResult => {
+    // Simple scoring algorithm
+    let scienceScore = 0;
+    let commerceScore = 0;
+    let artsScore = 0;
+    let vocationalScore = 0;
+
+    // Extract user profile from answers
     let userProfile: UserProfile = {
       stream: 'Science',
       location: '',
@@ -81,167 +86,115 @@ export function QuizProvider({ children }: { children: ReactNode }) {
       futureGoals: 'higher_studies'
     };
 
-    let areaType = 'Urban'; // Rural/Urban
-    let collegePreference = 'Government'; // Government/Private
-    let preferredStream = 'Science'; // Arts/Commerce/Science
-    let marks = 'Above 90'; // Marks range
-
     state.answers.forEach(answer => {
       const question = quizQuestions.find(q => q.id === answer.questionId);
       if (!question) return;
 
-      switch (question.id) {
-        case 1: // Area type
-          areaType = answer.selectedOption === 0 ? 'Rural' : 'Urban';
+      const weight = question.weight;
+      
+      // Handle profile questions separately
+      if (question.category === 'profile') {
+        switch (question.id) {
+          case 9: // Stream preference
+            if (answer.selectedOption === 0) userProfile.stream = 'Science';
+            else if (answer.selectedOption === 1) userProfile.stream = 'Commerce'; 
+            else if (answer.selectedOption === 2) userProfile.stream = 'Arts';
+            else if (answer.selectedOption === 3) userProfile.stream = 'Vocational';
+            break;
+          case 10: // District
+            userProfile.district = answer.value || '';
+            userProfile.location = answer.value || '';
+            break;
+          case 11: // Future goals
+            if (answer.selectedOption === 0) userProfile.futureGoals = 'higher_studies';
+            else if (answer.selectedOption === 1) userProfile.futureGoals = 'government_jobs';
+            else if (answer.selectedOption === 2) userProfile.futureGoals = 'private_sector';
+            else if (answer.selectedOption === 3) userProfile.futureGoals = 'skill_based';
+            break;
+        }
+        return;
+      }
+      
+      // Score based on answer patterns for other questions
+      switch (answer.selectedOption) {
+        case 0: // Usually science-oriented
+          scienceScore += 10 * weight;
           break;
-        case 2: // College preference
-          collegePreference = answer.selectedOption === 0 ? 'Government' : 'Private';
+        case 1: // Usually commerce-oriented  
+          commerceScore += 10 * weight;
           break;
-        case 3: // Preferred stream
-          if (answer.selectedOption === 0) preferredStream = 'Arts';
-          else if (answer.selectedOption === 1) preferredStream = 'Commerce';
-          else if (answer.selectedOption === 2) preferredStream = 'Science';
+        case 2: // Usually arts-oriented
+          artsScore += 10 * weight;
           break;
-        case 4: // 12th marks
-          if (answer.selectedOption === 0) marks = 'Below 70';
-          else if (answer.selectedOption === 1) marks = '70-80';
-          else if (answer.selectedOption === 2) marks = '80-90';
-          else if (answer.selectedOption === 3) marks = 'Above 90';
-          break;
-        case 5: // District
-          userProfile.district = answer.value || '';
-          userProfile.location = answer.value || '';
+        case 3: // Mixed or vocational
+          vocationalScore += 8 * weight;
+          scienceScore += 3 * weight;
           break;
       }
     });
 
-    // Set stream in userProfile
-    userProfile.stream = preferredStream as 'Science' | 'Commerce' | 'Arts' | 'Vocational';
+    let stream: 'Science' | 'Commerce' | 'Arts' | 'Vocational';
+    let score: number;
 
-    // Calculate a score based on preferences (simple scoring)
-    const baseScore = marks === 'Above 90' ? 90 : marks === '80-90' ? 80 : marks === '70-80' ? 70 : 60;
-
-    // Get course recommendations
-    const recommendations = courseRecommendations[preferredStream] || [];
-
-    // Fetch colleges from Supabase database
-    try {
-      let query = supabase
-        .from('colleges')
-        .select('*');
-
-      // Filter by area type
-      query = query.eq('area_type', areaType);
-
-      // Filter by ownership (college preference)
-      query = query.eq('ownership', collegePreference);
-
-      // Filter by district (nearby districts)
-      if (userProfile.district) {
-        const nearbyDistricts = getNearbyDistricts(userProfile.district);
-        query = query.in('district', nearbyDistricts);
-      }
-
-      // Filter by streams offered (must include the preferred stream)
-      query = query.contains('streams_offered', [preferredStream]);
-
-      // Execute query
-      const { data: colleges, error } = await query;
-
-      if (error) {
-        console.error('Error fetching colleges:', error);
-        // Fallback to static data if database query fails
-        return createFallbackResult(userProfile, preferredStream, baseScore, recommendations);
-      }
-
-      // Transform database colleges to match the expected format
-      const transformedColleges = (colleges || []).map(college => ({
-        id: college.id,
-        name: college.college_name,
-        location: college.district,
-        district: college.district,
-        type: college.ownership as 'Government' | 'Private',
-        website: college.website,
-        contact: 'Contact via website', // Placeholder since not in our schema
-        courses: college.streams_offered,
-        feeRange: college.fee_range_ug || 'Fee information not available'
-      }));
-
-      // If no colleges match all criteria, relax the filters
-      let finalColleges = transformedColleges;
-      if (finalColleges.length === 0) {
-        // Try again with just district and stream filters
-        const { data: relaxedColleges } = await supabase
-          .from('colleges')
-          .select('*')
-          .contains('streams_offered', [preferredStream]);
-
-        if (relaxedColleges) {
-          finalColleges = relaxedColleges.map(college => ({
-            id: college.id,
-            name: college.college_name,
-            location: college.district,
-            district: college.district,
-            type: college.ownership as 'Government' | 'Private',
-            website: college.website,
-            contact: 'Contact via website',
-            courses: college.streams_offered,
-            feeRange: college.fee_range_ug || 'Fee information not available'
-          }));
-        }
-      }
-
-      const result: QuizResult = {
-        stream: preferredStream as 'Science' | 'Commerce' | 'Arts' | 'Vocational',
-        score: baseScore,
-        recommendations,
-        colleges: finalColleges.slice(0, 8), // Limit to 8 colleges
-        userProfile
-      };
-
-      return result;
-    } catch (error) {
-      console.error('Database connection error:', error);
-      // Fallback to static data
-      return createFallbackResult(userProfile, preferredStream, baseScore, recommendations);
+    // Use explicit stream preference if provided, otherwise use calculated scores
+    if (userProfile.stream !== 'Science' || scienceScore === 0) {
+      stream = userProfile.stream;
+      score = Math.max(scienceScore, commerceScore, artsScore, vocationalScore);
+    } else if (scienceScore >= commerceScore && scienceScore >= artsScore && scienceScore >= vocationalScore) {
+      stream = 'Science';
+      score = scienceScore;
+    } else if (commerceScore >= artsScore && commerceScore >= vocationalScore) {
+      stream = 'Commerce'; 
+      score = commerceScore;
+    } else if (vocationalScore >= artsScore) {
+      stream = 'Vocational';
+      score = vocationalScore;
+    } else {
+      stream = 'Arts';
+      score = artsScore;
     }
-  };
 
-  // Fallback function for when database is unavailable
-  const createFallbackResult = (userProfile: UserProfile, stream: string, score: number, recommendations: any[]) => {
-    // Create basic colleges as fallback (simplified)
-    const fallbackColleges: College[] = [
-      {
-        id: 'fallback-1',
-        name: 'Government Degree College Srinagar',
-        location: 'Srinagar',
-        district: 'Srinagar',
-        type: 'Government',
-        courses: ['Science', 'Commerce', 'Arts'],
-        website: 'https://gdcsrinagar.edu.in',
-        contact: 'Contact via website',
-        feeRange: 'Rs. 5,000-15,000'
-      },
-      {
-        id: 'fallback-2',
-        name: 'Kashmir University',
-        location: 'Srinagar',
-        district: 'Srinagar', 
-        type: 'Government',
-        courses: ['Science', 'Commerce', 'Arts', 'Law', 'Engineering'],
-        website: 'https://kashmiruniversity.net',
-        contact: 'Contact via website',
-        feeRange: 'Rs. 10,000-30,000'
-      }
-    ];
+    // Get recommendations
+    let recommendations = courseRecommendations[stream] || [];
+    if (stream === 'Vocational') {
+      recommendations = vocationalCourses;
+    }
 
-    return {
-      stream: stream as 'Science' | 'Commerce' | 'Arts' | 'Vocational',
-      score,
+    // Filter colleges by district and courses
+    let relevantColleges = [...jkColleges];
+    
+    // Filter by district if specified
+    if (userProfile.district) {
+      const nearbyDistricts = getNearbyDistricts(userProfile.district);
+      relevantColleges = relevantColleges.filter(college => 
+        nearbyDistricts.includes(college.district)
+      );
+    }
+    
+    // Filter by stream-relevant courses
+    relevantColleges = relevantColleges.filter(college => 
+      college.courses.some(course => 
+        recommendations.some(rec => 
+          course.toLowerCase().includes(rec.name.toLowerCase().split(' ')[0].toLowerCase()) ||
+          rec.name.toLowerCase().includes(course.toLowerCase().split(' ')[0])
+        )
+      )
+    );
+
+    // If no relevant colleges found, show all J&K colleges
+    if (relevantColleges.length === 0) {
+      relevantColleges = jkColleges;
+    }
+
+    const result: QuizResult = {
+      stream,
+      score: Math.round(score),
       recommendations,
-      colleges: fallbackColleges,
-      userProfile
+      colleges: relevantColleges.slice(0, 8), // Limit to 8 colleges
+      userProfile: { ...userProfile, stream }
     };
+
+    return result;
   };
 
   // Helper function to get nearby districts

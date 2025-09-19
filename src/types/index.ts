@@ -39,15 +39,15 @@ export interface CourseRecommendation {
 }
 
 export interface College {
-  id: string; // Changed from number to string for UUID
+  id: number;
   name: string;
   location: string;
   district: string;
+  state: string;
   type: 'Government' | 'Private';
   courses: string[];
   website?: string;
   contact: string;
-  feeRange?: string; // Added fee range field
 }
 
 export interface StudentData {

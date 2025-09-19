@@ -96,7 +96,7 @@ export const generatePDFReport = (result: QuizResult, studentName: string = 'Stu
     currentY += 8;
     pdf.setFontSize(10);
     pdf.setTextColor(80, 80, 80);
-    pdf.text(`Location: ${college.location}, ${college.district}`, margin + 5, currentY);
+    pdf.text(`Location: ${college.location}, ${college.state}`, margin + 5, currentY);
     
     currentY += 6;
     pdf.text(`Type: ${college.type} College`, margin + 5, currentY);

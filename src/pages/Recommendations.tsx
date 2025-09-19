@@ -32,12 +32,9 @@ const Recommendations: React.FC = () => {
   const [expandedCourse, setExpandedCourse] = useState<number | null>(null);
 
   useEffect(() => {
-    if (state.isComplete && state.answers.length >= 5) {
-      const fetchResult = async () => {
-        const calculatedResult = await calculateResult();
-        setResult(calculatedResult);
-      };
-      fetchResult();
+    if (state.isComplete && state.answers.length >= 8) {
+      const calculatedResult = calculateResult();
+      setResult(calculatedResult);
     }
   }, [state, calculateResult]);
 
@@ -84,7 +81,7 @@ const Recommendations: React.FC = () => {
   };
 
   // Show message if quiz not completed
-  if (!state.isComplete || state.answers.length < 5) {
+  if (!state.isComplete || state.answers.length < 8) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-background to-muted/30">
         <Card className="w-full max-w-md card-gradient shadow-medium border-0">
@@ -243,13 +240,6 @@ const Recommendations: React.FC = () => {
                         <Badge variant={college.type === 'Government' ? 'default' : 'secondary'}>
                           {college.type} • J&K
                         </Badge>
-                        {college.feeRange && (
-                          <div className="mt-2">
-                            <Badge variant="outline" className="text-xs bg-primary/5">
-                              {college.feeRange}
-                            </Badge>
-                          </div>
-                        )}
                       </div>
                       <div className="flex space-x-2">
                         {college.website && (
