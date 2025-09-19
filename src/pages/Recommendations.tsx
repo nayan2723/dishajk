@@ -96,8 +96,8 @@ const Recommendations: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen py-8 px-4 bg-gradient-to-br from-background to-muted/30">
-      <div className="container mx-auto max-w-6xl">
+    <div className="min-h-screen py-8 px-4 animated-mesh">
+      <div className="container mx-auto max-w-6xl relative z-10">
         {/* Header */}
         <div className="text-center mb-8">
           <h1 className="text-3xl md:text-4xl font-bold mb-4">Your Personalized Recommendations</h1>
@@ -107,25 +107,27 @@ const Recommendations: React.FC = () => {
         </div>
 
         {/* Results Summary */}
-        <Card className="card-gradient shadow-medium border-0 mb-8 animate-fade-in">
-          <CardHeader className="text-center">
+        <Card className="card-dynamic shadow-glow border-0 mb-8 animate-fade-in pulse-glow">
+          <CardHeader className="text-center relative">
             <div className="flex justify-center mb-4">
-              <div className="p-4 rounded-full bg-success/10 text-success">
-                <Award className="h-8 w-8" />
+              <div className="p-6 rounded-full bg-gradient-to-br from-primary to-accent text-primary-foreground shadow-glow">
+                <Award className="h-10 w-10" />
               </div>
             </div>
-            <CardTitle className="text-2xl md:text-3xl">Recommended Stream: {result.stream}</CardTitle>
-            <p className="text-muted-foreground">Assessment Score: {result.score}/100</p>
-            <p className="text-sm text-muted-foreground mt-2">
+            <CardTitle className="text-3xl md:text-4xl bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent font-bold">
+              Recommended Stream: {result.stream}
+            </CardTitle>
+            <p className="text-muted-foreground text-lg">Assessment Score: {result.score}/100</p>
+            <p className="text-sm text-accent mt-2 font-medium">
               📍 Showing colleges near {result.userProfile.district}, J&K
             </p>
           </CardHeader>
           <CardContent className="text-center">
-            <Badge variant="secondary" className="text-lg px-4 py-2">
+            <Badge variant="secondary" className="text-lg px-6 py-3 bg-gradient-to-r from-primary/20 to-accent/20 border-primary/30">
               {result.stream} Stream
             </Badge>
-            <div className="mt-4 text-sm text-muted-foreground">
-              <p><strong>Future Goal:</strong> {
+            <div className="mt-6 p-4 bg-gradient-to-r from-primary/10 to-accent/10 rounded-lg border border-primary/20">
+              <p className="text-foreground font-medium"><strong>Future Goal:</strong> {
                 result.userProfile.futureGoals === 'higher_studies' ? 'Higher Studies' :
                 result.userProfile.futureGoals === 'government_jobs' ? 'Government Jobs' :
                 result.userProfile.futureGoals === 'private_sector' ? 'Private Sector' :
@@ -143,28 +145,31 @@ const Recommendations: React.FC = () => {
               Recommended Courses
             </h2>
             
-            <div className="space-y-4">
+            <div className="space-y-6">
               {result.recommendations.map((course, index) => (
-                <Card key={course.id} className="card-gradient shadow-soft hover:shadow-medium transition-smooth border-0">
+                <Card key={course.id} className="card-dynamic shadow-medium hover:shadow-glow border-0 group">
                   <Collapsible
                     open={expandedCourse === course.id}
                     onOpenChange={() => toggleCourseExpansion(course.id)}
                   >
                     <CollapsibleTrigger asChild>
-                      <CardHeader className="cursor-pointer hover:bg-muted/30 rounded-t-lg transition-smooth">
-                        <div className="flex items-center justify-between">
-                          <div className="flex items-center space-x-3">
-                            <div className="w-8 h-8 rounded-full bg-primary text-primary-foreground flex items-center justify-center font-bold">
+                      <CardHeader className="cursor-pointer hover:bg-gradient-to-r hover:from-primary/5 hover:to-accent/5 rounded-t-lg transition-all duration-300 relative overflow-hidden">
+                        <div className="flex items-center justify-between relative z-10">
+                          <div className="flex items-center space-x-4">
+                            <div className="w-12 h-12 rounded-full bg-gradient-to-br from-primary to-accent text-primary-foreground flex items-center justify-center font-bold text-lg shadow-glow group-hover:scale-110 transition-transform duration-300">
                               {index + 1}
                             </div>
-                            <CardTitle className="text-lg">{course.name}</CardTitle>
+                            <CardTitle className="text-xl group-hover:text-primary transition-colors duration-300">{course.name}</CardTitle>
                           </div>
-                          {expandedCourse === course.id ? (
-                            <ChevronUp className="h-5 w-5 text-muted-foreground" />
-                          ) : (
-                            <ChevronDown className="h-5 w-5 text-muted-foreground" />
-                          )}
+                          <div className="p-2 rounded-full bg-muted/20 group-hover:bg-primary/20 transition-colors duration-300">
+                            {expandedCourse === course.id ? (
+                              <ChevronUp className="h-5 w-5 text-primary group-hover:text-accent transition-colors duration-300" />
+                            ) : (
+                              <ChevronDown className="h-5 w-5 text-muted-foreground group-hover:text-primary transition-colors duration-300" />
+                            )}
+                          </div>
                         </div>
+                        <div className="absolute inset-0 bg-gradient-to-r from-primary/5 to-accent/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
                       </CardHeader>
                     </CollapsibleTrigger>
                     
@@ -180,14 +185,20 @@ const Recommendations: React.FC = () => {
                             </div>
                           </div>
                           
-                          <div className="p-3 bg-success/10 rounded-lg">
-                            <p className="text-sm font-medium text-success-foreground mb-1">Why this suits you:</p>
-                            <p className="text-sm text-muted-foreground">{course.rationale}</p>
+                          <div className="p-4 bg-gradient-to-r from-success/10 to-success/5 rounded-lg border border-success/20 hover:border-success/40 transition-colors duration-300">
+                            <p className="text-sm font-medium text-success mb-2 flex items-center">
+                              <TrendingUp className="h-4 w-4 mr-2" />
+                              Why this suits you:
+                            </p>
+                            <p className="text-sm text-muted-foreground leading-relaxed">{course.rationale}</p>
                           </div>
                           
-                          <div className="p-3 bg-primary/10 rounded-lg">
-                            <p className="text-sm font-medium text-primary mb-1">Career Scope:</p>
-                            <p className="text-sm text-muted-foreground">{course.scope}</p>
+                          <div className="p-4 bg-gradient-to-r from-primary/10 to-accent/10 rounded-lg border border-primary/20 hover:border-primary/40 transition-colors duration-300">
+                            <p className="text-sm font-medium text-primary mb-2 flex items-center">
+                              <BookOpen className="h-4 w-4 mr-2" />
+                              Career Scope:
+                            </p>
+                            <p className="text-sm text-muted-foreground leading-relaxed">{course.scope}</p>
                           </div>
                         </div>
                       </CardContent>
@@ -205,24 +216,32 @@ const Recommendations: React.FC = () => {
               Recommended Colleges
             </h2>
             
-            <div className="space-y-4">
+            <div className="space-y-6">
               {result.colleges.slice(0, 8).map((college) => (
-                <Card key={college.id} className="card-gradient shadow-soft hover:shadow-medium transition-smooth border-0">
-                  <CardContent className="p-6">
-                    <div className="flex justify-between items-start mb-4">
-                      <div>
-                        <h3 className="font-semibold text-lg mb-2">{college.name}</h3>
-                        <div className="flex items-center space-x-2 text-sm text-muted-foreground mb-2">
-                          <MapPin className="h-4 w-4" />
-                          <span>{college.location}, {college.district}</span>
+                <Card key={college.id} className="card-dynamic shadow-medium hover:shadow-glow border-0 group overflow-hidden">
+                  <CardContent className="p-6 relative">
+                    <div className="flex justify-between items-start mb-6">
+                      <div className="flex-1">
+                        <h3 className="font-bold text-xl mb-3 group-hover:text-primary transition-colors duration-300">{college.name}</h3>
+                        <div className="flex items-center space-x-2 text-muted-foreground mb-3">
+                          <div className="p-1 rounded-full bg-primary/10">
+                            <MapPin className="h-4 w-4 text-primary" />
+                          </div>
+                          <span className="font-medium">{college.location}, {college.district}</span>
                         </div>
-                        <Badge variant={college.type === 'Government' ? 'default' : 'secondary'}>
+                        <Badge 
+                          variant={college.type === 'Government' ? 'default' : 'secondary'} 
+                          className={`${college.type === 'Government' 
+                            ? 'bg-gradient-to-r from-primary to-accent text-primary-foreground' 
+                            : 'bg-gradient-to-r from-secondary to-muted text-secondary-foreground'
+                          } font-medium px-3 py-1`}
+                        >
                           {college.type} • J&K
                         </Badge>
                       </div>
-                      <div className="flex space-x-2">
+                      <div className="flex space-x-2 ml-4">
                         {college.website && (
-                          <Button variant="outline" size="sm" asChild>
+                          <Button variant="outline" size="sm" asChild className="group-hover:border-primary group-hover:text-primary transition-colors duration-300">
                             <a href={college.website} target="_blank" rel="noopener noreferrer">
                               <ExternalLink className="h-4 w-4" />
                             </a>
@@ -255,10 +274,12 @@ const Recommendations: React.FC = () => {
 
         {/* PDF Download Section */}
         <div className="grid md:grid-cols-2 gap-6 mt-8">
-          <Card className="card-gradient shadow-medium border-0">
+          <Card className="card-dynamic shadow-glow border-0 group">
             <CardHeader>
-              <CardTitle className="flex items-center">
-                <Download className="h-6 w-6 mr-2" />
+              <CardTitle className="flex items-center text-xl group-hover:text-primary transition-colors duration-300">
+                <div className="p-2 rounded-full bg-primary/10 mr-3 group-hover:bg-primary/20 transition-colors duration-300">
+                  <Download className="h-6 w-6 text-primary" />
+                </div>
                 Download Detailed Report
               </CardTitle>
             </CardHeader>
@@ -281,10 +302,12 @@ const Recommendations: React.FC = () => {
             </CardContent>
           </Card>
 
-          <Card className="card-gradient shadow-medium border-0">
+          <Card className="card-dynamic shadow-glow border-0 group">
             <CardHeader>
-              <CardTitle className="flex items-center">
-                <FileText className="h-6 w-6 mr-2" />
+              <CardTitle className="flex items-center text-xl group-hover:text-primary transition-colors duration-300">
+                <div className="p-2 rounded-full bg-accent/10 mr-3 group-hover:bg-accent/20 transition-colors duration-300">
+                  <FileText className="h-6 w-6 text-accent" />
+                </div>
                 Download Career Flowchart
               </CardTitle>
             </CardHeader>
@@ -309,17 +332,25 @@ const Recommendations: React.FC = () => {
         </div>
 
         {/* Next Steps */}
-        <Card className="mt-8 bg-primary text-primary-foreground border-0">
-          <CardContent className="p-6 text-center">
-            <h3 className="text-xl font-bold mb-4">What's Next?</h3>
-            <p className="mb-6 opacity-90">
+        <Card className="mt-8 bg-gradient-to-r from-primary via-accent to-primary text-primary-foreground border-0 shadow-glow overflow-hidden relative">
+          <div className="absolute inset-0 bg-gradient-to-r from-primary/80 via-accent/80 to-primary/80 animate-pulse opacity-20"></div>
+          <CardContent className="p-8 text-center relative z-10">
+            <h3 className="text-2xl font-bold mb-4">What's Next?</h3>
+            <p className="mb-8 opacity-90 text-lg">
               Ready to take the next step in your career journey? Explore more options and connect with counselors.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <Button variant="secondary" onClick={() => navigate('/quiz')}>
+              <Button 
+                variant="secondary" 
+                onClick={() => navigate('/quiz')}
+                className="bg-white/20 text-white border-white/30 hover:bg-white hover:text-primary transition-all duration-300 shadow-glow"
+              >
                 Retake Assessment
               </Button>
-              <Button variant="outline" className="border-white text-white hover:bg-white hover:text-primary">
+              <Button 
+                variant="outline" 
+                className="border-white/50 text-white hover:bg-white/20 hover:border-white transition-all duration-300"
+              >
                 Find More Colleges
               </Button>
             </div>

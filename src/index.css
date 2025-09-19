@@ -8,51 +8,53 @@ All colors MUST be HSL.
 
 @layer base {
   :root {
-    --background: 220 20% 98%;
-    --foreground: 220 15% 15%;
+    --background: 240 15% 9%;
+    --foreground: 300 20% 95%;
 
-    --card: 0 0% 100%;
-    --card-foreground: 220 15% 15%;
+    --card: 250 15% 12%;
+    --card-foreground: 300 20% 95%;
 
-    --popover: 0 0% 100%;
-    --popover-foreground: 220 15% 15%;
+    --popover: 250 15% 12%;
+    --popover-foreground: 300 20% 95%;
 
-    --primary: 195 85% 45%;
-    --primary-foreground: 0 0% 100%;
+    --primary: 280 85% 65%;
+    --primary-foreground: 240 15% 9%;
 
-    --secondary: 195 25% 95%;
-    --secondary-foreground: 195 85% 25%;
+    --secondary: 250 20% 18%;
+    --secondary-foreground: 300 20% 95%;
 
-    --muted: 220 15% 95%;
-    --muted-foreground: 220 10% 45%;
+    --muted: 250 15% 15%;
+    --muted-foreground: 280 10% 65%;
 
-    --accent: 35 85% 55%;
-    --accent-foreground: 0 0% 100%;
+    --accent: 260 85% 70%;
+    --accent-foreground: 240 15% 9%;
 
-    --success: 145 65% 45%;
-    --success-foreground: 0 0% 100%;
+    --success: 145 65% 55%;
+    --success-foreground: 240 15% 9%;
 
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 0 0% 100%;
 
-    --border: 220 15% 90%;
-    --input: 220 15% 90%;
-    --ring: 195 85% 45%;
+    --border: 250 15% 20%;
+    --input: 250 15% 15%;
+    --ring: 280 85% 65%;
 
-    --radius: 0.75rem;
+    --radius: 1rem;
 
-    /* Custom Design System - Web3 Theme */
-    --gradient-primary: linear-gradient(135deg, hsl(270 91% 65%), hsl(260 91% 50%));
-    --gradient-secondary: linear-gradient(135deg, hsl(35 85% 55%), hsl(25 75% 65%));
-    --gradient-hero: linear-gradient(to bottom right, hsl(0 0% 0%) 0%, hsl(270 91% 20%) 50%, hsl(260 91% 35%) 100%);
-    --gradient-card: linear-gradient(145deg, hsl(0 0% 100%) 0%, hsl(220 20% 98%) 100%);
-    --gradient-text: linear-gradient(135deg, hsl(0 0% 100%) 0%, hsl(270 91% 65%) 100%);
-    --glassmorphism: rgba(255, 255, 255, 0.1);
-    --glassmorphism-border: rgba(255, 255, 255, 0.2);
+    /* Custom Design System - Purple Theme */
+    --gradient-primary: linear-gradient(135deg, hsl(280 85% 65%) 0%, hsl(260 90% 70%) 100%);
+    --gradient-secondary: linear-gradient(135deg, hsl(260 85% 60%) 0%, hsl(240 80% 65%) 100%);
+    --gradient-hero: linear-gradient(135deg, hsl(280 85% 65%) 0%, hsl(260 90% 70%) 30%, hsl(240 85% 75%) 100%);
+    --gradient-card: linear-gradient(145deg, hsl(250 15% 12%) 0%, hsl(260 20% 16%) 100%);
+    --gradient-card-hover: linear-gradient(145deg, hsl(260 20% 16%) 0%, hsl(270 25% 20%) 100%);
+    --gradient-mesh: radial-gradient(ellipse at top, hsl(280 85% 25%) 0%, transparent 60%), 
+                     radial-gradient(ellipse at bottom right, hsl(260 80% 20%) 0%, transparent 60%),
+                     radial-gradient(ellipse at bottom left, hsl(240 75% 15%) 0%, transparent 60%);
     
-    --shadow-soft: 0 2px 20px -5px hsl(195 85% 45% / 0.15);
-    --shadow-medium: 0 8px 30px -8px hsl(195 85% 45% / 0.25);
-    --shadow-strong: 0 15px 40px -10px hsl(195 85% 45% / 0.35);
+    --shadow-soft: 0 4px 20px -8px hsl(280 85% 65% / 0.25);
+    --shadow-medium: 0 8px 40px -12px hsl(280 85% 65% / 0.35);
+    --shadow-strong: 0 20px 60px -15px hsl(280 85% 65% / 0.45);
+    --shadow-glow: 0 0 30px hsl(280 85% 65% / 0.3);
     
     --transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     --transition-bounce: all 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
@@ -136,6 +138,7 @@ All colors MUST be HSL.
 }
 
 @layer components {
+  /* Background gradients */
   .hero-gradient {
     background: var(--gradient-hero);
   }
@@ -143,20 +146,16 @@ All colors MUST be HSL.
   .card-gradient {
     background: var(--gradient-card);
   }
-  
-  .gradient-text {
-    background: var(--gradient-text);
-    background-clip: text;
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
+
+  .card-gradient-hover {
+    background: var(--gradient-card-hover);
+  }
+
+  .mesh-gradient {
+    background: var(--gradient-mesh);
   }
   
-  .glassmorphism {
-    background: var(--glassmorphism);
-    backdrop-filter: blur(20px);
-    border: 1px solid var(--glassmorphism-border);
-  }
-  
+  /* Shadows */
   .shadow-soft {
     box-shadow: var(--shadow-soft);
   }
@@ -168,7 +167,12 @@ All colors MUST be HSL.
   .shadow-strong {
     box-shadow: var(--shadow-strong);
   }
+
+  .shadow-glow {
+    box-shadow: var(--shadow-glow);
+  }
   
+  /* Transitions */
   .transition-smooth {
     transition: var(--transition-smooth);
   }
@@ -177,10 +181,59 @@ All colors MUST be HSL.
     transition: var(--transition-bounce);
   }
 
+  /* Dynamic card effects */
+  .card-dynamic {
+    @apply transition-all duration-300 ease-out hover:scale-[1.02] hover:shadow-glow;
+    background: var(--gradient-card);
+    border: 1px solid hsl(var(--border));
+    position: relative;
+    overflow: hidden;
+  }
+
+  .card-dynamic::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, hsl(var(--primary) / 0.1), transparent);
+    transition: left 0.5s ease;
+  }
+
+  .card-dynamic:hover::before {
+    left: 100%;
+  }
+
+  .card-dynamic:hover {
+    background: var(--gradient-card-hover);
+    border-color: hsl(var(--primary) / 0.5);
+  }
+
+  /* Animated background mesh */
+  .animated-mesh {
+    background: var(--gradient-mesh);
+    position: relative;
+  }
+
+  .animated-mesh::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: var(--gradient-mesh);
+    animation: meshShift 20s ease-in-out infinite;
+    opacity: 0.8;
+  }
+
+  /* Hero animations */
   .hero-image-animate {
     animation: float 6s ease-in-out infinite;
   }
 
+  /* Keyframes */
   @keyframes float {
     0%, 100% {
       transform: translateY(0px) translateX(0px);
@@ -194,5 +247,30 @@ All colors MUST be HSL.
     75% {
       transform: translateY(-10px) translateX(10px);
     }
+  }
+
+  @keyframes meshShift {
+    0%, 100% {
+      transform: translateX(0) translateY(0) scale(1);
+    }
+    33% {
+      transform: translateX(-10px) translateY(-10px) scale(1.05);
+    }
+    66% {
+      transform: translateX(10px) translateY(10px) scale(0.95);
+    }
+  }
+
+  @keyframes pulse-glow {
+    0%, 100% {
+      box-shadow: 0 0 20px hsl(var(--primary) / 0.3);
+    }
+    50% {
+      box-shadow: 0 0 40px hsl(var(--primary) / 0.6);
+    }
+  }
+
+  .pulse-glow {
+    animation: pulse-glow 2s ease-in-out infinite;
   }
 }
