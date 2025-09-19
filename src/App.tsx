@@ -15,6 +15,8 @@ import NotFound from "./pages/NotFound";
 import SignIn from "./pages/SignIn";
 import SignUp from "./pages/SignUp";
 import ProtectedRoute from "./components/ProtectedRoute";
+import TermsProtectedRoute from "./components/TermsProtectedRoute";
+import Terms from "./pages/Terms";
 
 const queryClient = new QueryClient();
 
@@ -34,10 +36,11 @@ const App = () => (
             <Sonner />
             <BrowserRouter>
               <Routes>
-                <Route path="/" element={<Layout><Home /></Layout>} />
-                <Route path="/quiz" element={<Layout><ProtectedRoute><Quiz /></ProtectedRoute></Layout>} />
-                <Route path="/recommendations" element={<Layout><Recommendations /></Layout>} />
-                <Route path="/dashboard" element={<Layout><ProtectedRoute><Dashboard /></ProtectedRoute></Layout>} />
+                <Route path="/" element={<Layout><TermsProtectedRoute><Home /></TermsProtectedRoute></Layout>} />
+                <Route path="/quiz" element={<Layout><TermsProtectedRoute><Quiz /></TermsProtectedRoute></Layout>} />
+                <Route path="/recommendations" element={<Layout><TermsProtectedRoute><Recommendations /></TermsProtectedRoute></Layout>} />
+                <Route path="/dashboard" element={<Layout><TermsProtectedRoute><Dashboard /></TermsProtectedRoute></Layout>} />
+                <Route path="/terms" element={<ProtectedRoute><Terms /></ProtectedRoute>} />
                 <Route path="/sign-in" element={<SignIn />} />
                 <Route path="/sign-up" element={<SignUp />} />
                 {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}

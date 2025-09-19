@@ -27,7 +27,7 @@ const SignInPage = () => {
                 otpCodeFieldInput: "bg-background border-border text-foreground focus:border-primary"
               }
             }}
-            redirectUrl="/"
+            redirectUrl="/terms"
             signUpUrl="/sign-up"
           />
         </div>
