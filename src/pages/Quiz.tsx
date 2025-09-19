@@ -12,6 +12,7 @@ import { quizQuestions } from '../data/quizData';
 import QuizProgress from '../components/QuizProgress';
 import { useToast } from '@/hooks/use-toast';
 import StudentDetailsForm from '../components/StudentDetailsForm';
+import Recommendations from './Recommendations';
 
 const Quiz: React.FC = () => {
   const { state, dispatch } = useQuiz();
@@ -19,6 +20,7 @@ const Quiz: React.FC = () => {
   const { toast } = useToast();
   const [textInputValue, setTextInputValue] = useState('');
   const [showStudentForm, setShowStudentForm] = useState(false);
+  const [showRecommendations, setShowRecommendations] = useState(false);
   
   const currentQuestion = quizQuestions[state.currentQuestion];
   const currentAnswer = state.answers.find(a => a.questionId === currentQuestion?.id);
@@ -83,12 +85,18 @@ const Quiz: React.FC = () => {
   const handleStudentFormSuccess = (studentId: string) => {
     // Store student ID for future use if needed
     console.log('Student saved with ID:', studentId);
-    navigate('/recommendations');
+    setShowStudentForm(false);
+    setShowRecommendations(true);
   };
 
   // Show student details form after quiz completion
   if (showStudentForm) {
     return <StudentDetailsForm onSuccess={handleStudentFormSuccess} />;
+  }
+
+  // Show recommendations after student form completion
+  if (showRecommendations) {
+    return <Recommendations />;
   }
 
   if (!currentQuestion) {
