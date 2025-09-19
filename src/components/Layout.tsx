@@ -121,8 +121,8 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
               </span>
             </div>
             <div className="flex space-x-4 text-sm text-muted-foreground">
-              <a href="#" className="hover:text-primary transition-smooth">About</a>
-              <a href="#" className="hover:text-primary transition-smooth">Contact</a>
+              <a href="#about" className="hover:text-primary transition-smooth">About</a>
+              <a href="#contact" className="hover:text-primary transition-smooth">Contact</a>
               <a href="#" className="hover:text-primary transition-smooth">Privacy</a>
             </div>
           </div>
