@@ -25,6 +25,13 @@ import {
 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 
+interface DashboardData {
+  totalColleges: number;
+  typeDistribution: { type: string; count: number; percentage: number }[];
+  districtData: { district: string; count: number }[];
+  streamData: { stream: string; count: number }[];
+}
+
 const Dashboard: React.FC = () => {
   const [streamFilter, setStreamFilter] = useState<string>('all');
   const [districtFilter, setDistrictFilter] = useState<string>('all');
@@ -60,7 +67,7 @@ const Dashboard: React.FC = () => {
   }, []);
 
   // Calculate dashboard statistics
-  const dashboardStats = useMemo(() => {
+  const dashboardStats = useMemo((): DashboardData => {
     if (loading || colleges.length === 0) {
       return {
         totalColleges: 0,
@@ -102,8 +109,8 @@ const Dashboard: React.FC = () => {
 
     const typeDistribution = Object.entries(typeCounts).map(([type, count]) => ({
       type,
-      count,
-      percentage: Math.round((count / totalColleges) * 100)
+      count: Number(count),
+      percentage: Math.round((Number(count) / totalColleges) * 100)
     }));
 
     // District data
@@ -115,7 +122,7 @@ const Dashboard: React.FC = () => {
 
     const districtData = Object.entries(districtCounts).map(([district, count]) => ({
       district,
-      count
+      count: Number(count)
     }));
 
     // Stream data
@@ -223,9 +230,9 @@ const Dashboard: React.FC = () => {
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm font-medium text-muted-foreground">Government Colleges</p>
-                  <p className="text-2xl font-bold">
-                    {loading ? 'Loading...' : (dashboardStats.typeDistribution.find(t => t.type === 'Government')?.count || 0)}
-                  </p>
+                   <p className="text-2xl font-bold">
+                     {loading ? 'Loading...' : String(dashboardStats.typeDistribution.find(t => t.type === 'Government')?.count || 0)}
+                   </p>
                 </div>
                 <div className="p-2 rounded-full bg-success/10 text-success">
                   <TrendingUp className="h-6 w-6" />
@@ -311,7 +318,7 @@ const Dashboard: React.FC = () => {
                       className="w-3 h-3 rounded-full" 
                       style={{ backgroundColor: COLORS[item.type] || 'hsl(var(--muted))' }}
                     />
-                    <span className="text-sm">{item.type}: {item.count}</span>
+                    <span className="text-sm">{item.type}: {String(item.count)}</span>
                   </div>
                 ))}
               </div>
