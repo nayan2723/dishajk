@@ -10,6 +10,9 @@ import Quiz from "./pages/Quiz";
 import Recommendations from "./pages/Recommendations";
 import Dashboard from "./pages/Dashboard";
 import NotFound from "./pages/NotFound";
+import SignIn from "./pages/SignIn";
+import SignUp from "./pages/SignUp";
+import ProtectedRoute from "./components/ProtectedRoute";
 
 const queryClient = new QueryClient();
 
@@ -24,7 +27,9 @@ const App = () => (
             <Route path="/" element={<Layout><Home /></Layout>} />
             <Route path="/quiz" element={<Layout><Quiz /></Layout>} />
             <Route path="/recommendations" element={<Layout><Recommendations /></Layout>} />
-            <Route path="/dashboard" element={<Layout><Dashboard /></Layout>} />
+            <Route path="/dashboard" element={<Layout><ProtectedRoute><Dashboard /></ProtectedRoute></Layout>} />
+            <Route path="/sign-in" element={<SignIn />} />
+            <Route path="/sign-up" element={<SignUp />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<Layout><NotFound /></Layout>} />
           </Routes>

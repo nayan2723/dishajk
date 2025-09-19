@@ -2,6 +2,7 @@ import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { GraduationCap, Home, ClipboardList, Target, BarChart3 } from 'lucide-react';
+import { SignedIn, SignedOut, UserButton } from "@clerk/clerk-react";
 import ThemeToggle from './ThemeToggle';
 
 interface LayoutProps {
@@ -62,6 +63,33 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
                   );
                 })}
               </nav>
+              
+              {/* Authentication */}
+              <SignedOut>
+                <div className="hidden md:flex items-center space-x-2">
+                  <Button variant="ghost" size="sm" asChild>
+                    <Link to="/sign-in">Sign In</Link>
+                  </Button>
+                  <Button size="sm" asChild>
+                    <Link to="/sign-up">Sign Up</Link>
+                  </Button>
+                </div>
+              </SignedOut>
+              
+              <SignedIn>
+                <UserButton 
+                  appearance={{
+                    elements: {
+                      avatarBox: "w-8 h-8",
+                      userButtonPopoverCard: "bg-card border-border",
+                      userButtonPopoverActionButton: "text-foreground hover:bg-accent",
+                      userButtonPopoverActionButtonText: "text-foreground",
+                      userButtonPopoverActionButtonIcon: "text-muted-foreground"
+                    }
+                  }}
+                />
+              </SignedIn>
+              
               <ThemeToggle />
             </div>
 
