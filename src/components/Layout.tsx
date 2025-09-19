@@ -42,27 +42,29 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
 
             {/* Navigation */}
             <div className="flex items-center space-x-2">
-              <nav className="hidden md:flex items-center space-x-1">
-                {navItems.map((item) => {
-                  const isActive = location.pathname === item.path;
-                  const Icon = item.icon;
-                  
-                  return (
-                    <Button
-                      key={item.path}
-                      variant={isActive ? "default" : "ghost"}
-                      size="sm"
-                      asChild
-                      className="transition-smooth"
-                    >
-                      <Link to={item.path} className="flex items-center space-x-2">
-                        <Icon className="h-4 w-4" />
-                        <span>{item.label}</span>
-                      </Link>
-                    </Button>
-                  );
-                })}
-              </nav>
+              <SignedIn>
+                <nav className="hidden md:flex items-center space-x-1">
+                  {navItems.map((item) => {
+                    const isActive = location.pathname === item.path;
+                    const Icon = item.icon;
+                    
+                    return (
+                      <Button
+                        key={item.path}
+                        variant={isActive ? "default" : "ghost"}
+                        size="sm"
+                        asChild
+                        className="transition-smooth"
+                      >
+                        <Link to={item.path} className="flex items-center space-x-2">
+                          <Icon className="h-4 w-4" />
+                          <span>{item.label}</span>
+                        </Link>
+                      </Button>
+                    );
+                  })}
+                </nav>
+              </SignedIn>
               
               {/* Authentication */}
               <SignedOut>
