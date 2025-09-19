@@ -11,12 +11,14 @@ import { useQuiz } from '../context/QuizContext';
 import { quizQuestions } from '../data/quizData';
 import QuizProgress from '../components/QuizProgress';
 import { useToast } from '@/hooks/use-toast';
+import StudentDetailsForm from '../components/StudentDetailsForm';
 
 const Quiz: React.FC = () => {
   const { state, dispatch } = useQuiz();
   const navigate = useNavigate();
   const { toast } = useToast();
   const [textInputValue, setTextInputValue] = useState('');
+  const [showStudentForm, setShowStudentForm] = useState(false);
   
   const currentQuestion = quizQuestions[state.currentQuestion];
   const currentAnswer = state.answers.find(a => a.questionId === currentQuestion?.id);
@@ -58,10 +60,10 @@ const Quiz: React.FC = () => {
     }
 
     if (isLastQuestion) {
-      // All questions answered, complete quiz and navigate to results
+      // All questions answered, complete quiz and show student form
       if (state.answers.length === quizQuestions.length) {
         dispatch({ type: 'COMPLETE_QUIZ' });
-        navigate('/recommendations');
+        setShowStudentForm(true);
       } else {
         toast({
           title: "Complete all questions",
@@ -77,6 +79,17 @@ const Quiz: React.FC = () => {
   const handlePrevious = () => {
     dispatch({ type: 'PREVIOUS_QUESTION' });
   };
+
+  const handleStudentFormSuccess = (studentId: string) => {
+    // Store student ID for future use if needed
+    console.log('Student saved with ID:', studentId);
+    navigate('/recommendations');
+  };
+
+  // Show student details form after quiz completion
+  if (showStudentForm) {
+    return <StudentDetailsForm onSuccess={handleStudentFormSuccess} />;
+  }
 
   if (!currentQuestion) {
     return (
