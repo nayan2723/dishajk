@@ -32,9 +32,12 @@ const Recommendations: React.FC = () => {
   const [expandedCourse, setExpandedCourse] = useState<number | null>(null);
 
   useEffect(() => {
-    if (state.isComplete && state.answers.length >= 8) {
-      const calculatedResult = calculateResult();
-      setResult(calculatedResult);
+    if (state.isComplete && state.answers.length >= 5) {
+      const fetchResult = async () => {
+        const calculatedResult = await calculateResult();
+        setResult(calculatedResult);
+      };
+      fetchResult();
     }
   }, [state, calculateResult]);
 
@@ -81,7 +84,7 @@ const Recommendations: React.FC = () => {
   };
 
   // Show message if quiz not completed
-  if (!state.isComplete || state.answers.length < 8) {
+  if (!state.isComplete || state.answers.length < 5) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-background to-muted/30">
         <Card className="w-full max-w-md card-gradient shadow-medium border-0">
@@ -237,9 +240,14 @@ const Recommendations: React.FC = () => {
                           <MapPin className="h-4 w-4" />
                           <span>{college.location}, {college.district}</span>
                         </div>
-                        <Badge variant={college.type === 'Government' ? 'default' : 'secondary'}>
-                          {college.type} • J&K
-                        </Badge>
+                        <div className="flex gap-2">
+                          <Badge variant={college.type?.toLowerCase().includes('govt') ? 'default' : 'secondary'}>
+                            {college.type?.toLowerCase().includes('govt') ? 'Government' : 'Private'}
+                          </Badge>
+                          <Badge variant="outline">
+                            {college.areaType || 'Unknown'}
+                          </Badge>
+                        </div>
                       </div>
                       <div className="flex space-x-2">
                         {college.website && (

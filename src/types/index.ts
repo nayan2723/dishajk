@@ -43,11 +43,11 @@ export interface College {
   name: string;
   location: string;
   district: string;
-  state: string;
-  type: 'Government' | 'Private';
+  type: string;
   courses: string[];
-  website?: string;
   contact: string;
+  website?: string | null;
+  areaType?: string;
 }
 
 export interface StudentData {

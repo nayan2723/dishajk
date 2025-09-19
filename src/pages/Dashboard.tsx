@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
@@ -12,9 +12,7 @@ import {
   PieChart, 
   Pie, 
   Cell, 
-  ResponsiveContainer,
-  LineChart,
-  Line
+  ResponsiveContainer
 } from 'recharts';
 import { 
   Users, 
@@ -23,40 +21,95 @@ import {
   MapPin, 
   BarChart3,
   PieChart as PieChartIcon,
-  Calendar
+  Building
 } from 'lucide-react';
-import { mockStudentData } from '../data/jkData';
-import { DashboardStats } from '../types';
+import { supabase } from '@/integrations/supabase/client';
 
 const Dashboard: React.FC = () => {
   const [streamFilter, setStreamFilter] = useState<string>('all');
   const [districtFilter, setDistrictFilter] = useState<string>('all');
+  const [colleges, setColleges] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  // Fetch colleges from Supabase
+  useEffect(() => {
+    const fetchColleges = async () => {
+      try {
+        const response = await fetch(`https://iaenrgkstxjthwiecwli.supabase.co/rest/v1/colleges?select=*`, {
+          headers: {
+            'apikey': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlhZW5yZ2tzdHhqdGh3aWVjd2xpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTgzMDQwMTIsImV4cCI6MjA3Mzg4MDAxMn0.U3hNv5emyHwxB2e7s4Juu1chE_pzV5On15lm0wwouwg',
+            'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlhZW5yZ2tzdHhqdGh3aWVjd2xpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTgzMDQwMTIsImV4cCI6MjA3Mzg4MDAxMn0.U3hNv5emyHwxB2e7s4Juu1chE_pzV5On15lm0wwouwg'
+          }
+        });
+        const data = await response.json();
+        const error = !response.ok ? { message: 'Failed to fetch' } : null;
+        
+        if (error) {
+          console.error('Error fetching colleges:', error);
+        } else {
+          setColleges(data || []);
+        }
+      } catch (error) {
+        console.error('Error:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchColleges();
+  }, []);
 
   // Calculate dashboard statistics
-  const dashboardStats = useMemo((): DashboardStats => {
-    const filteredData = mockStudentData.filter(student => {
-      const matchesStream = streamFilter === 'all' || student.stream === streamFilter;
-      const matchesDistrict = districtFilter === 'all' || student.district === districtFilter;
-      return matchesStream && matchesDistrict;
-    });
+  const dashboardStats = useMemo(() => {
+    if (loading || colleges.length === 0) {
+      return {
+        totalColleges: 0,
+        typeDistribution: [],
+        districtData: [],
+        streamData: []
+      };
+    }
 
-    const totalStudents = filteredData.length;
+    let filteredData = colleges.filter(college => college['College Name']); // Filter out null entries
     
-    // Stream distribution
-    const streamCounts = filteredData.reduce((acc, student) => {
-      acc[student.stream] = (acc[student.stream] || 0) + 1;
+    // Apply filters
+    if (streamFilter !== 'all') {
+      filteredData = filteredData.filter(college => {
+        const courses = college['Courses Offered (Categorized Streams)'] || '';
+        return courses.toLowerCase().includes(streamFilter.toLowerCase());
+      });
+    }
+    
+    if (districtFilter !== 'all') {
+      filteredData = filteredData.filter(college => 
+        college['District'] === districtFilter
+      );
+    }
+
+    const totalColleges = filteredData.length;
+    
+    // Type distribution (Government vs Private)
+    const typeCounts = filteredData.reduce((acc: Record<string, number>, college) => {
+      const type = college['Type'] || 'Unknown';
+      const category = type.toLowerCase().includes('govt') || type.toLowerCase().includes('government') 
+        ? 'Government' 
+        : type.toLowerCase().includes('private') || type.toLowerCase().includes('pvt')
+        ? 'Private'
+        : 'Other';
+      acc[category] = (acc[category] || 0) + 1;
       return acc;
     }, {} as Record<string, number>);
 
-    const streamDistribution = Object.entries(streamCounts).map(([stream, count]) => ({
-      stream,
+    const typeDistribution = Object.entries(typeCounts).map(([type, count]) => ({
+      type,
       count,
-      percentage: Math.round((count / totalStudents) * 100)
+      percentage: Math.round((count / totalColleges) * 100)
     }));
 
     // District data
-    const districtCounts = filteredData.reduce((acc, student) => {
-      acc[student.district] = (acc[student.district] || 0) + 1;
+    const districtCounts = filteredData.reduce((acc: Record<string, number>, college) => {
+      const district = college['District'] || 'Unknown';
+      acc[district] = (acc[district] || 0) + 1;
       return acc;
     }, {} as Record<string, number>);
 
@@ -65,34 +118,50 @@ const Dashboard: React.FC = () => {
       count
     }));
 
+    // Stream data
+    const streamCounts = filteredData.reduce((acc: Record<string, number>, college) => {
+      const courses = college['Courses Offered (Categorized Streams)'] || '';
+      const coursesLower = courses.toLowerCase();
+      
+      if (coursesLower.includes('science') || coursesLower.includes('tech')) {
+        acc['Science'] = (acc['Science'] || 0) + 1;
+      }
+      if (coursesLower.includes('commerce') || coursesLower.includes('mgt') || coursesLower.includes('comm')) {
+        acc['Commerce'] = (acc['Commerce'] || 0) + 1;
+      }
+      if (coursesLower.includes('arts') || coursesLower.includes('law')) {
+        acc['Arts'] = (acc['Arts'] || 0) + 1;
+      }
+      
+      return acc;
+    }, {} as Record<string, number>);
+
+    const streamData = Object.entries(streamCounts).map(([stream, count]) => ({
+      stream,
+      count: Number(count)
+    }));
+
     return {
-      totalStudents,
-      streamDistribution,
-      districtData
+      totalColleges,
+      typeDistribution,
+      districtData,
+      streamData
     };
-  }, [streamFilter, districtFilter]);
+  }, [colleges, streamFilter, districtFilter, loading]);
 
   // Chart colors
   const COLORS: Record<string, string> = {
     Science: 'hsl(195, 85%, 45%)',
     Commerce: 'hsl(35, 85%, 55%)', 
     Arts: 'hsl(145, 65%, 45%)',
-    Vocational: 'hsl(270, 65%, 55%)'
+    Government: 'hsl(195, 85%, 45%)',
+    Private: 'hsl(35, 85%, 55%)',
+    Other: 'hsl(145, 65%, 45%)'
   };
 
   // Get unique districts and streams for filters
-  const uniqueDistricts = [...new Set(mockStudentData.map(s => s.district))];
-  const uniqueStreams = [...new Set(mockStudentData.map(s => s.stream))];
-
-  // Performance trends (mock data)
-  const performanceTrends = [
-    { month: 'Jan', Science: 85, Commerce: 78, Arts: 72 },
-    { month: 'Feb', Science: 87, Commerce: 80, Arts: 74 },
-    { month: 'Mar', Science: 86, Commerce: 82, Arts: 76 },
-    { month: 'Apr', Science: 89, Commerce: 81, Arts: 75 },
-    { month: 'May', Science: 88, Commerce: 83, Arts: 77 },
-    { month: 'Jun', Science: 90, Commerce: 84, Arts: 78 }
-  ];
+  const uniqueDistricts = [...new Set(colleges.map(college => college['District']).filter(Boolean))];
+  const uniqueStreams = ['science', 'commerce', 'arts'];
 
   return (
     <div className="min-h-screen py-8 px-4 bg-gradient-to-br from-background to-muted/30">
@@ -100,9 +169,9 @@ const Dashboard: React.FC = () => {
         {/* Header */}
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8">
           <div>
-            <h1 className="text-3xl md:text-4xl font-bold mb-2">Admin Dashboard</h1>
+            <h1 className="text-3xl md:text-4xl font-bold mb-2">College Dashboard</h1>
             <p className="text-lg text-muted-foreground">
-              Student assessment analytics and insights
+              J&K colleges analytics and insights
             </p>
           </div>
           
@@ -114,7 +183,7 @@ const Dashboard: React.FC = () => {
               <SelectContent>
                 <SelectItem value="all">All Streams</SelectItem>
                 {uniqueStreams.map(stream => (
-                  <SelectItem key={stream} value={stream}>{stream}</SelectItem>
+                  <SelectItem key={stream} value={stream} className="capitalize">{stream}</SelectItem>
                 ))}
               </SelectContent>
             </Select>
@@ -139,11 +208,11 @@ const Dashboard: React.FC = () => {
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm font-medium text-muted-foreground">Total Students</p>
-                  <p className="text-2xl font-bold">{dashboardStats.totalStudents}</p>
+                  <p className="text-sm font-medium text-muted-foreground">Total Colleges</p>
+                  <p className="text-2xl font-bold">{loading ? 'Loading...' : dashboardStats.totalColleges}</p>
                 </div>
                 <div className="p-2 rounded-full bg-primary/10 text-primary">
-                  <Users className="h-6 w-6" />
+                  <Building className="h-6 w-6" />
                 </div>
               </div>
             </CardContent>
@@ -153,9 +222,9 @@ const Dashboard: React.FC = () => {
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm font-medium text-muted-foreground">Average Score</p>
+                  <p className="text-sm font-medium text-muted-foreground">Government Colleges</p>
                   <p className="text-2xl font-bold">
-                    {Math.round(mockStudentData.reduce((sum, s) => sum + s.score, 0) / mockStudentData.length)}
+                    {loading ? 'Loading...' : (dashboardStats.typeDistribution.find(t => t.type === 'Government')?.count || 0)}
                   </p>
                 </div>
                 <div className="p-2 rounded-full bg-success/10 text-success">
@@ -169,12 +238,12 @@ const Dashboard: React.FC = () => {
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm font-medium text-muted-foreground">Popular Stream</p>
+                  <p className="text-sm font-medium text-muted-foreground">Most Common Stream</p>
                   <p className="text-2xl font-bold">
-                    {dashboardStats.streamDistribution.reduce((max, current) => 
+                    {loading ? 'Loading...' : (dashboardStats.streamData.length > 0 ? (dashboardStats.streamData.reduce((max, current) => 
                       current.count > max.count ? current : max, 
-                      dashboardStats.streamDistribution[0]
-                    )?.stream || 'N/A'}
+                      dashboardStats.streamData[0]
+                    )?.stream || 'N/A') : 'N/A')}
                   </p>
                 </div>
                 <div className="p-2 rounded-full bg-accent/10 text-accent">
@@ -188,8 +257,8 @@ const Dashboard: React.FC = () => {
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm font-medium text-muted-foreground">Active Districts</p>
-                  <p className="text-2xl font-bold">{dashboardStats.districtData.length}</p>
+                  <p className="text-sm font-medium text-muted-foreground">Districts Covered</p>
+                  <p className="text-2xl font-bold">{loading ? 'Loading...' : dashboardStats.districtData.length}</p>
                 </div>
                 <div className="p-2 rounded-full bg-primary/10 text-primary">
                   <MapPin className="h-6 w-6" />
@@ -200,43 +269,49 @@ const Dashboard: React.FC = () => {
         </div>
 
         <div className="grid lg:grid-cols-2 gap-8 mb-8">
-          {/* Stream Distribution Pie Chart */}
+          {/* College Type Distribution Pie Chart */}
           <Card className="card-gradient shadow-medium border-0">
             <CardHeader>
               <CardTitle className="flex items-center">
                 <PieChartIcon className="h-5 w-5 mr-2" />
-                Interest by Stream
+                Colleges by Type
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="h-80">
-                <ResponsiveContainer width="100%" height="100%">
-                  <PieChart>
-                    <Pie
-                      data={dashboardStats.streamDistribution}
-                      cx="50%"
-                      cy="50%"
-                      outerRadius={100}
-                      dataKey="count"
-                      label={({stream, percentage}) => `${stream} (${percentage}%)`}
-                    >
-                      {dashboardStats.streamDistribution.map((entry) => (
-                        <Cell key={entry.stream} fill={COLORS[entry.stream] || 'hsl(var(--muted))'} />
-                      ))}
-                    </Pie>
-                    <Tooltip formatter={(value, name) => [value, 'Students']} />
-                  </PieChart>
-                </ResponsiveContainer>
-              </div>
+              {loading ? (
+                <div className="h-80 flex items-center justify-center">
+                  <p>Loading...</p>
+                </div>
+              ) : (
+                <div className="h-80">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <PieChart>
+                      <Pie
+                        data={dashboardStats.typeDistribution}
+                        cx="50%"
+                        cy="50%"
+                        outerRadius={100}
+                        dataKey="count"
+                        label={(entry: any) => `${entry.type} (${entry.percentage}%)`}
+                      >
+                        {dashboardStats.typeDistribution.map((entry) => (
+                          <Cell key={entry.type} fill={COLORS[entry.type] || 'hsl(var(--muted))'} />
+                        ))}
+                      </Pie>
+                      <Tooltip formatter={(value: any, name: any) => [value, 'Colleges']} />
+                    </PieChart>
+                  </ResponsiveContainer>
+                </div>
+              )}
               
               <div className="flex flex-wrap gap-2 mt-4">
-                {dashboardStats.streamDistribution.map(item => (
-                  <div key={item.stream} className="flex items-center space-x-2">
+                {dashboardStats.typeDistribution.map(item => (
+                  <div key={item.type} className="flex items-center space-x-2">
                     <div 
                       className="w-3 h-3 rounded-full" 
-                      style={{ backgroundColor: COLORS[item.stream] || 'hsl(var(--muted))' }}
+                      style={{ backgroundColor: COLORS[item.type] || 'hsl(var(--muted))' }}
                     />
-                    <span className="text-sm">{item.stream}: {item.count}</span>
+                    <span className="text-sm">{item.type}: {item.count}</span>
                   </div>
                 ))}
               </div>
@@ -248,115 +323,109 @@ const Dashboard: React.FC = () => {
             <CardHeader>
               <CardTitle className="flex items-center">
                 <BarChart3 className="h-5 w-5 mr-2" />
-                Students by District
+                Colleges by District
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="h-80">
-                <ResponsiveContainer width="100%" height="100%">
-                  <BarChart data={dashboardStats.districtData}>
-                    <CartesianGrid strokeDasharray="3 3" />
-                    <XAxis 
-                      dataKey="district" 
-                      angle={-45}
-                      textAnchor="end"
-                      height={100}
-                    />
-                    <YAxis />
-                    <Tooltip />
-                    <Bar dataKey="count" fill="hsl(195, 85%, 45%)" radius={[4, 4, 0, 0]} />
-                  </BarChart>
-                </ResponsiveContainer>
-              </div>
+              {loading ? (
+                <div className="h-80 flex items-center justify-center">
+                  <p>Loading...</p>
+                </div>
+              ) : (
+                <div className="h-80">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <BarChart data={dashboardStats.districtData.slice(0, 10)}>
+                      <CartesianGrid strokeDasharray="3 3" />
+                      <XAxis 
+                        dataKey="district" 
+                        angle={-45}
+                        textAnchor="end"
+                        height={100}
+                      />
+                      <YAxis />
+                  <Tooltip formatter={(value: any, name: any) => [value, 'Colleges']} />
+                      <Bar dataKey="count" fill="hsl(195, 85%, 45%)" radius={[4, 4, 0, 0]} />
+                    </BarChart>
+                  </ResponsiveContainer>
+                </div>
+              )}
             </CardContent>
           </Card>
         </div>
 
-        {/* Performance Trends */}
+        {/* Stream Distribution Bar Chart */}
         <Card className="card-gradient shadow-medium border-0 mb-8">
           <CardHeader>
             <CardTitle className="flex items-center">
-              <Calendar className="h-5 w-5 mr-2" />
-              Average Score Trends by Stream
+              <BarChart3 className="h-5 w-5 mr-2" />
+              Colleges Offering Different Streams
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="h-80">
-              <ResponsiveContainer width="100%" height="100%">
-                <LineChart data={performanceTrends}>
-                  <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis dataKey="month" />
-                  <YAxis domain={[60, 100]} />
-                  <Tooltip />
-                  <Line 
-                    type="monotone" 
-                    dataKey="Science" 
-                    stroke={COLORS.Science}
-                    strokeWidth={3}
-                    dot={{ r: 6 }}
-                  />
-                  <Line 
-                    type="monotone" 
-                    dataKey="Commerce" 
-                    stroke={COLORS.Commerce}
-                    strokeWidth={3}
-                    dot={{ r: 6 }}
-                  />
-                  <Line 
-                    type="monotone" 
-                    dataKey="Arts" 
-                    stroke={COLORS.Arts}
-                    strokeWidth={3}
-                    dot={{ r: 6 }}
-                  />
-                </LineChart>
-              </ResponsiveContainer>
-            </div>
+            {loading ? (
+              <div className="h-80 flex items-center justify-center">
+                <p>Loading...</p>
+              </div>
+            ) : (
+              <div className="h-80">
+                <ResponsiveContainer width="100%" height="100%">
+                  <BarChart data={dashboardStats.streamData}>
+                    <CartesianGrid strokeDasharray="3 3" />
+                    <XAxis dataKey="stream" />
+                    <YAxis />
+                    <Tooltip formatter={(value: any, name: any) => [value, 'Colleges']} />
+                    <Bar dataKey="count" fill="hsl(195, 85%, 45%)" radius={[4, 4, 0, 0]} />
+                  </BarChart>
+                </ResponsiveContainer>
+              </div>
+            )}
           </CardContent>
         </Card>
 
-        {/* Recent Students */}
+        {/* Recent Colleges */}
         <Card className="card-gradient shadow-medium border-0">
           <CardHeader>
-            <CardTitle>Recent Assessments</CardTitle>
+            <CardTitle>College Database</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="overflow-x-auto">
-              <table className="w-full">
-                <thead>
-                  <tr className="border-b">
-                    <th className="text-left py-2">Name</th>
-                    <th className="text-left py-2">Stream</th>
-                    <th className="text-left py-2">District</th>
-                    <th className="text-left py-2">Score</th>
-                    <th className="text-left py-2">Date</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {mockStudentData.slice(0, 8).map((student) => (
-                    <tr key={student.id} className="border-b">
-                      <td className="py-3">{student.name}</td>
-                      <td className="py-3">
-                        <Badge 
-                          variant="outline" 
-                          style={{ 
-                            borderColor: COLORS[student.stream] || 'hsl(var(--muted))', 
-                            color: COLORS[student.stream] || 'hsl(var(--muted-foreground))' 
-                          }}
-                        >
-                          {student.stream}
-                        </Badge>
-                      </td>
-                      <td className="py-3">{student.district}</td>
-                      <td className="py-3 font-medium">{student.score}</td>
-                      <td className="py-3 text-muted-foreground">
-                        {new Date(student.completedAt).toLocaleDateString()}
-                      </td>
+            {loading ? (
+              <div className="p-8 text-center">
+                <p>Loading colleges...</p>
+              </div>
+            ) : (
+              <div className="overflow-x-auto">
+                <table className="w-full">
+                  <thead>
+                    <tr className="border-b">
+                      <th className="text-left py-2">College Name</th>
+                      <th className="text-left py-2">Type</th>
+                      <th className="text-left py-2">District</th>
+                      <th className="text-left py-2">Area</th>
+                      <th className="text-left py-2">Courses</th>
                     </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
+                  </thead>
+                  <tbody>
+                    {colleges.slice(0, 10).filter(college => college['College Name']).map((college, index) => (
+                    <tr key={index} className="border-b">
+                        <td className="py-3 font-medium">{college['College Name'] || 'Unknown'}</td>
+                        <td className="py-3">
+                          <Badge 
+                            variant={(college['Type'] && college['Type'].toLowerCase().includes('govt')) ? 'default' : 'secondary'}
+                          >
+                            {(college['Type'] && college['Type'].includes('Govt')) ? 'Government' : 'Private'}
+                          </Badge>
+                        </td>
+                        <td className="py-3">{college['District'] || 'Unknown'}</td>
+                        <td className="py-3">{college['Urban/Rural Status'] || 'Unknown'}</td>
+                        <td className="py-3 text-muted-foreground max-w-xs truncate">
+                          {college['Courses Offered (Categorized Streams)'] || 'No courses listed'}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
           </CardContent>
         </Card>
       </div>

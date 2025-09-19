@@ -1,7 +1,8 @@
 import React, { createContext, useContext, useReducer, ReactNode } from 'react';
 import { QuizAnswer, QuizResult, UserProfile } from '../types';
-import { quizQuestions, courseRecommendations, colleges } from '../data/quizData';
-import { jkColleges, vocationalCourses } from '../data/jkData';
+import { quizQuestions, courseRecommendations } from '../data/quizData';
+import { vocationalCourses } from '../data/jkData';
+import { supabase } from '@/integrations/supabase/client';
 
 interface QuizState {
   currentQuestion: number;
@@ -27,7 +28,7 @@ const initialState: QuizState = {
 const QuizContext = createContext<{
   state: QuizState;
   dispatch: React.Dispatch<QuizAction>;
-  calculateResult: () => QuizResult;
+  calculateResult: () => Promise<QuizResult>;
 } | null>(null);
 
 function quizReducer(state: QuizState, action: QuizAction): QuizState {
@@ -71,13 +72,7 @@ function quizReducer(state: QuizState, action: QuizAction): QuizState {
 export function QuizProvider({ children }: { children: ReactNode }) {
   const [state, dispatch] = useReducer(quizReducer, initialState);
 
-  const calculateResult = (): QuizResult => {
-    // Simple scoring algorithm
-    let scienceScore = 0;
-    let commerceScore = 0;
-    let artsScore = 0;
-    let vocationalScore = 0;
-
+  const calculateResult = async (): Promise<QuizResult> => {
     // Extract user profile from answers
     let userProfile: UserProfile = {
       stream: 'Science',
@@ -86,115 +81,186 @@ export function QuizProvider({ children }: { children: ReactNode }) {
       futureGoals: 'higher_studies'
     };
 
+    let areaType = 'Urban';
+    let ownership = 'Government';
+    let preferredStream = 'Science';
+    let marksRange = 'Above 90';
+
+    // Process quiz answers
     state.answers.forEach(answer => {
       const question = quizQuestions.find(q => q.id === answer.questionId);
       if (!question) return;
 
-      const weight = question.weight;
-      
-      // Handle profile questions separately
-      if (question.category === 'profile') {
-        switch (question.id) {
-          case 9: // Stream preference
-            if (answer.selectedOption === 0) userProfile.stream = 'Science';
-            else if (answer.selectedOption === 1) userProfile.stream = 'Commerce'; 
-            else if (answer.selectedOption === 2) userProfile.stream = 'Arts';
-            else if (answer.selectedOption === 3) userProfile.stream = 'Vocational';
-            break;
-          case 10: // District
-            userProfile.district = answer.value || '';
-            userProfile.location = answer.value || '';
-            break;
-          case 11: // Future goals
-            if (answer.selectedOption === 0) userProfile.futureGoals = 'higher_studies';
-            else if (answer.selectedOption === 1) userProfile.futureGoals = 'government_jobs';
-            else if (answer.selectedOption === 2) userProfile.futureGoals = 'private_sector';
-            else if (answer.selectedOption === 3) userProfile.futureGoals = 'skill_based';
-            break;
-        }
-        return;
-      }
-      
-      // Score based on answer patterns for other questions
-      switch (answer.selectedOption) {
-        case 0: // Usually science-oriented
-          scienceScore += 10 * weight;
+      switch (question.id) {
+        case 1: // Area type
+          areaType = question.options![answer.selectedOption];
           break;
-        case 1: // Usually commerce-oriented  
-          commerceScore += 10 * weight;
+        case 2: // Ownership preference
+          ownership = question.options![answer.selectedOption];
           break;
-        case 2: // Usually arts-oriented
-          artsScore += 10 * weight;
+        case 3: // Stream preference
+          preferredStream = question.options![answer.selectedOption];
+          userProfile.stream = preferredStream as 'Science' | 'Commerce' | 'Arts';
           break;
-        case 3: // Mixed or vocational
-          vocationalScore += 8 * weight;
-          scienceScore += 3 * weight;
+        case 4: // 12th marks
+          marksRange = question.options![answer.selectedOption];
+          break;
+        case 5: // District
+          userProfile.district = answer.value || '';
+          userProfile.location = answer.value || '';
           break;
       }
     });
 
-    let stream: 'Science' | 'Commerce' | 'Arts' | 'Vocational';
-    let score: number;
+    // Determine recommended stream based on marks and preference
+    let stream: 'Science' | 'Commerce' | 'Arts' = preferredStream as 'Science' | 'Commerce' | 'Arts';
+    let score = 85; // Base score
 
-    // Use explicit stream preference if provided, otherwise use calculated scores
-    if (userProfile.stream !== 'Science' || scienceScore === 0) {
-      stream = userProfile.stream;
-      score = Math.max(scienceScore, commerceScore, artsScore, vocationalScore);
-    } else if (scienceScore >= commerceScore && scienceScore >= artsScore && scienceScore >= vocationalScore) {
-      stream = 'Science';
-      score = scienceScore;
-    } else if (commerceScore >= artsScore && commerceScore >= vocationalScore) {
-      stream = 'Commerce'; 
-      score = commerceScore;
-    } else if (vocationalScore >= artsScore) {
-      stream = 'Vocational';
-      score = vocationalScore;
-    } else {
-      stream = 'Arts';
-      score = artsScore;
+    // Adjust score based on marks
+    switch (marksRange) {
+      case 'Above 90':
+        score = 95;
+        break;
+      case '80-90':
+        score = 85;
+        break;
+      case '70-80':
+        score = 75;
+        break;
+      case 'Below 70':
+        score = 65;
+        break;
     }
 
-    // Get recommendations
+    // Get recommendations based on stream
     let recommendations = courseRecommendations[stream] || [];
-    if (stream === 'Vocational') {
-      recommendations = vocationalCourses;
-    }
 
-    // Filter colleges by district and courses
-    let relevantColleges = [...jkColleges];
-    
-    // Filter by district if specified
-    if (userProfile.district) {
-      const nearbyDistricts = getNearbyDistricts(userProfile.district);
-      relevantColleges = relevantColleges.filter(college => 
-        nearbyDistricts.includes(college.district)
+    // Fetch colleges from Supabase using direct query
+    try {
+      const response = await fetch(`https://iaenrgkstxjthwiecwli.supabase.co/rest/v1/colleges?select=*`, {
+        headers: {
+          'apikey': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlhZW5yZ2tzdHhqdGh3aWVjd2xpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTgzMDQwMTIsImV4cCI6MjA3Mzg4MDAxMn0.U3hNv5emyHwxB2e7s4Juu1chE_pzV5On15lm0wwouwg',
+          'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlhZW5yZ2tzdHhqdGh3aWVjd2xpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTgzMDQwMTIsImV4cCI6MjA3Mzg4MDAxMn0.U3hNv5emyHwxB2e7s4Juu1chE_pzV5On15lm0wwouwg'
+        }
+      });
+      const allColleges = await response.json();
+      const error = !response.ok ? { message: 'Failed to fetch' } : null;
+
+      if (error) {
+        console.error('Error fetching colleges:', error);
+        return {
+          stream,
+          score,
+          recommendations,
+          colleges: [],
+          userProfile: { ...userProfile, stream }
+        };
+      }
+
+      let filteredColleges = allColleges || [];
+
+      // Filter by area type
+      filteredColleges = filteredColleges.filter(college => 
+        college['Urban/Rural Status'] === areaType
       );
+
+      // Filter by ownership type
+      filteredColleges = filteredColleges.filter(college => {
+        const collegeType = college['Type'] || '';
+        if (ownership === 'Government') {
+          return collegeType.toLowerCase().includes('govt') || 
+                 collegeType.toLowerCase().includes('government');
+        } else {
+          return collegeType.toLowerCase().includes('private') || 
+                 collegeType.toLowerCase().includes('pvt');
+        }
+      });
+
+      // Filter by district (if specified)
+      if (userProfile.district) {
+        const nearbyDistricts = getNearbyDistricts(userProfile.district);
+        filteredColleges = filteredColleges.filter(college => 
+          nearbyDistricts.includes(college['District'])
+        );
+      }
+
+      // Filter by stream-relevant courses
+      filteredColleges = filteredColleges.filter(college => {
+        const courses = college['Courses Offered (Categorized Streams)'] || '';
+        const coursesLower = courses.toLowerCase();
+        
+        switch (stream) {
+          case 'Science':
+            return coursesLower.includes('science') || 
+                   coursesLower.includes('tech') || 
+                   coursesLower.includes('mbbs') ||
+                   coursesLower.includes('engineering');
+          case 'Commerce':
+            return coursesLower.includes('commerce') || 
+                   coursesLower.includes('comm') || 
+                   coursesLower.includes('mgt') ||
+                   coursesLower.includes('management');
+          case 'Arts':
+            return coursesLower.includes('arts') || 
+                   coursesLower.includes('law') ||
+                   coursesLower.includes('humanities');
+          default:
+            return true;
+        }
+      });
+
+      // If no colleges match all criteria, relax filters
+      if (filteredColleges.length === 0) {
+        filteredColleges = allColleges.filter(college => {
+          const courses = college['Courses Offered (Categorized Streams)'] || '';
+          const coursesLower = courses.toLowerCase();
+          
+          switch (stream) {
+            case 'Science':
+              return coursesLower.includes('science') || coursesLower.includes('tech');
+            case 'Commerce':
+              return coursesLower.includes('commerce') || coursesLower.includes('mgt');
+            case 'Arts':
+              return coursesLower.includes('arts');
+            default:
+              return true;
+          }
+        });
+      }
+
+      // Convert to the expected format
+      const colleges = filteredColleges.slice(0, 5).map((college, index) => ({
+        id: index + 1,
+        name: college['College Name'] || 'Unknown College',
+        location: college['District'] || 'Unknown',
+        district: college['District'] || 'Unknown',
+        type: college['Type'] || 'Unknown',
+        courses: [college['Courses Offered (Categorized Streams)'] || 'General'],
+        contact: college['Working College Link'] || 'No contact available',
+        website: college['Working College Link'] || null,
+        areaType: college['Urban/Rural Status'] || 'Unknown'
+      }));
+
+      const result: QuizResult = {
+        stream,
+        score,
+        recommendations,
+        colleges,
+        userProfile: { ...userProfile, stream }
+      };
+
+      return result;
+
+    } catch (error) {
+      console.error('Error in calculateResult:', error);
+      return {
+        stream,
+        score,
+        recommendations,
+        colleges: [],
+        userProfile: { ...userProfile, stream }
+      };
     }
-    
-    // Filter by stream-relevant courses
-    relevantColleges = relevantColleges.filter(college => 
-      college.courses.some(course => 
-        recommendations.some(rec => 
-          course.toLowerCase().includes(rec.name.toLowerCase().split(' ')[0].toLowerCase()) ||
-          rec.name.toLowerCase().includes(course.toLowerCase().split(' ')[0])
-        )
-      )
-    );
-
-    // If no relevant colleges found, show all J&K colleges
-    if (relevantColleges.length === 0) {
-      relevantColleges = jkColleges;
-    }
-
-    const result: QuizResult = {
-      stream,
-      score: Math.round(score),
-      recommendations,
-      colleges: relevantColleges.slice(0, 8), // Limit to 8 colleges
-      userProfile: { ...userProfile, stream }
-    };
-
-    return result;
   };
 
   // Helper function to get nearby districts
