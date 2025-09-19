@@ -249,6 +249,26 @@ export function QuizProvider({ children }: { children: ReactNode }) {
         userProfile: { ...userProfile, stream }
       };
 
+      // Save quiz session to database
+      try {
+        const studentNameAnswer = state.answers.find(a => a.questionId === 6);
+        const studentName = studentNameAnswer?.value || 'Anonymous Student';
+
+        await supabase
+          .from('quiz_sessions')
+          .insert({
+            student_name: studentName,
+            location: userProfile.location,
+            district: userProfile.district,
+            stream: result.stream,
+            score: result.score,
+            quiz_answers: state.answers,
+            user_profile: userProfile
+          });
+      } catch (error) {
+        console.error('Error saving quiz session:', error);
+      }
+
       return result;
 
     } catch (error) {

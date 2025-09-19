@@ -22,10 +22,10 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
   return (
     <div className="min-h-screen bg-background">
       {/* Header */}
-      <header className={`sticky top-0 z-[1] w-full transition-all duration-300 ${
+      <header className={`sticky top-0 z-50 w-full transition-all duration-300 ${
         location.pathname === '/' 
           ? 'bg-transparent border-transparent' 
-          : 'border-b bg-card/80 backdrop-blur-sm shadow-soft'
+          : 'border-b bg-card/95 backdrop-blur-sm shadow-soft'
       }`}>
         <div className="container mx-auto px-4 py-4">
           <div className="flex items-center justify-between">
@@ -106,7 +106,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
       </header>
 
       {/* Main Content */}
-      <main className="flex-1">
+      <main className={`flex-1 ${location.pathname !== '/' ? 'pt-4' : ''}`}>
         {children}
       </main>
 

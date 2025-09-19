@@ -22,7 +22,7 @@ export const generatePDFReport = (result: QuizResult, studentName: string = 'Stu
   
   pdf.setFontSize(12);
   pdf.text(`Name: ${studentName}`, margin, 75);
-  pdf.text(`Assessment Score: ${result.score}/100`, margin, 85);
+  // Removed score display per requirements
 
   // Recommended Stream
   pdf.setFontSize(16);

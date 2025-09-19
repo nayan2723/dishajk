@@ -16,12 +16,15 @@ import {
   ChevronUp,
   BookOpen,
   Building,
-  FileText
+  FileText,
+  Search
 } from 'lucide-react';
 import { useQuiz } from '../context/QuizContext';
 import { generatePDFReport } from '../utils/pdfGenerator';
 import { generateFlowchartPDF } from '../utils/flowchartGenerator';
 import { useToast } from '@/hooks/use-toast';
+import { supabase } from '@/integrations/supabase/client';
+import { College } from '../types';
 
 const Recommendations: React.FC = () => {
   const { state, calculateResult } = useQuiz();
@@ -30,6 +33,9 @@ const Recommendations: React.FC = () => {
   const [studentName, setStudentName] = useState('');
   const [result, setResult] = useState(null);
   const [expandedCourse, setExpandedCourse] = useState<number | null>(null);
+  const [nearbyColleges, setNearbyColleges] = useState<College[]>([]);
+  const [showNearbyColleges, setShowNearbyColleges] = useState(false);
+  const [loadingNearby, setLoadingNearby] = useState(false);
 
   useEffect(() => {
     if (state.isComplete && state.answers.length >= 5) {
@@ -81,6 +87,61 @@ const Recommendations: React.FC = () => {
 
   const toggleCourseExpansion = (courseId: number) => {
     setExpandedCourse(expandedCourse === courseId ? null : courseId);
+  };
+
+  const handleFindMoreColleges = async () => {
+    if (!result) return;
+    
+    setLoadingNearby(true);
+    try {
+      const { data: colleges, error } = await supabase
+        .from('colleges')
+        .select('*')
+        .ilike('District', `%${result.userProfile.district}%`)
+        .limit(10);
+
+      if (error) {
+        console.error('Error fetching nearby colleges:', error);
+        toast({
+          title: "Error",
+          description: "Failed to fetch nearby colleges. Please try again.",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      // Transform the data to match College interface
+      const transformedColleges: College[] = (colleges || []).map((college, index) => ({
+        id: index + 1000, // Use offset to avoid conflicts
+        name: college['College Name'] || 'Unknown College',
+        location: 'Unknown',
+        district: college['District'] || 'Unknown',
+        type: college['Type'] || 'Unknown',
+        courses: college['Courses Offered (Categorized Streams)'] 
+          ? college['Courses Offered (Categorized Streams)'].split(',').map((c: string) => c.trim())
+          : [],
+        contact: 'Contact information not available',
+        website: college['Working College Link'] || null,
+        areaType: college['Urban/Rural Status'] || 'Unknown'
+      }));
+
+      setNearbyColleges(transformedColleges);
+      setShowNearbyColleges(true);
+      
+      toast({
+        title: "Colleges Found!",
+        description: `Found ${transformedColleges.length} colleges in your area.`,
+      });
+    } catch (error) {
+      console.error('Error:', error);
+      toast({
+        title: "Error",
+        description: "An unexpected error occurred. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setLoadingNearby(false);
+    }
   };
 
   // Show message if quiz not completed
@@ -139,7 +200,7 @@ const Recommendations: React.FC = () => {
               </div>
             </div>
             <CardTitle className="text-2xl md:text-3xl">Recommended Stream: {result.stream}</CardTitle>
-            <p className="text-muted-foreground">Assessment Score: {result.score}/100</p>
+            <p className="text-muted-foreground">Based on your assessment responses</p>
             <p className="text-sm text-muted-foreground mt-2">
               📍 Showing colleges near {result.userProfile.district}, J&K
             </p>
@@ -348,12 +409,90 @@ const Recommendations: React.FC = () => {
               <Button variant="secondary" onClick={() => navigate('/quiz')}>
                 Retake Assessment
               </Button>
-              <Button variant="outline" className="border-white text-white hover:bg-white hover:text-primary">
-                Find More Colleges
+              <Button 
+                variant="outline" 
+                className="border-white text-white hover:bg-white hover:text-primary"
+                onClick={handleFindMoreColleges}
+                disabled={loadingNearby}
+              >
+                <Search className="h-4 w-4 mr-2" />
+                {loadingNearby ? 'Finding...' : 'Find More Colleges'}
               </Button>
             </div>
           </CardContent>
         </Card>
+
+        {/* Nearby Colleges Section */}
+        {showNearbyColleges && nearbyColleges.length > 0 && (
+          <Card className="mt-8 card-gradient shadow-medium border-0">
+            <CardHeader>
+              <CardTitle className="flex items-center">
+                <Search className="h-6 w-6 mr-2" />
+                More Colleges in {result?.userProfile.district}
+              </CardTitle>
+              <p className="text-muted-foreground">
+                Additional colleges in your area that might interest you
+              </p>
+            </CardHeader>
+            <CardContent>
+              <div className="grid md:grid-cols-2 gap-4">
+                {nearbyColleges.map((college) => (
+                  <Card key={college.id} className="card-gradient shadow-soft hover:shadow-medium transition-smooth border-0">
+                    <CardContent className="p-4">
+                      <div className="flex justify-between items-start mb-3">
+                        <div>
+                          <h3 className="font-semibold text-base mb-1">{college.name}</h3>
+                          <div className="flex items-center space-x-1 text-sm text-muted-foreground mb-2">
+                            <MapPin className="h-3 w-3" />
+                            <span>{college.district}</span>
+                          </div>
+                          <div className="flex gap-1 flex-wrap">
+                            <Badge variant={college.type?.toLowerCase().includes('govt') ? 'default' : 'secondary'} className="text-xs">
+                              {college.type?.toLowerCase().includes('govt') ? 'Government' : 'Private'}
+                            </Badge>
+                            <Badge variant="outline" className="text-xs">
+                              {college.areaType}
+                            </Badge>
+                          </div>
+                        </div>
+                        {college.website && (
+                          <Button variant="outline" size="sm" asChild>
+                            <a href={college.website} target="_blank" rel="noopener noreferrer">
+                              <ExternalLink className="h-3 w-3" />
+                            </a>
+                          </Button>
+                        )}
+                      </div>
+                      
+                      <div className="space-y-2">
+                        <p className="text-xs text-muted-foreground">
+                          <strong>Contact:</strong> {college.contact}
+                        </p>
+                        {college.courses.length > 0 && (
+                          <div>
+                            <p className="text-xs font-medium mb-1">Courses:</p>
+                            <div className="flex flex-wrap gap-1">
+                              {college.courses.slice(0, 3).map((course) => (
+                                <Badge key={course} variant="outline" className="text-xs">
+                                  {course}
+                                </Badge>
+                              ))}
+                              {college.courses.length > 3 && (
+                                <Badge variant="outline" className="text-xs">
+                                  +{college.courses.length - 3} more
+                                </Badge>
+                              )}
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+        )}
       </div>
     </div>
   );

@@ -1,7 +1,9 @@
-import React, { useState, useMemo, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { 
   BarChart, 
   Bar, 
@@ -9,52 +11,72 @@ import {
   YAxis, 
   CartesianGrid, 
   Tooltip, 
+  ResponsiveContainer, 
   PieChart, 
   Pie, 
-  Cell, 
-  ResponsiveContainer
+  Cell
 } from 'recharts';
-import { 
-  Users, 
-  TrendingUp, 
-  GraduationCap, 
-  MapPin, 
-  BarChart3,
-  PieChart as PieChartIcon,
-  Building
+import {
+  Users,
+  GraduationCap,
+  Building2,
+  MapPin,
+  TrendingUp,
+  BookOpen,
+  Search,
+  Filter,
+  Download,
+  RefreshCcw,
+  Clock,
+  Calendar
 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 
 interface DashboardData {
-  totalColleges: number;
-  typeDistribution: { type: string; count: number; percentage: number }[];
+  totalStudents: number;
+  streamDistribution: { stream: string; count: number; percentage: number }[];
   districtData: { district: string; count: number }[];
-  streamData: { stream: string; count: number }[];
+  recentQuizzes: Array<{
+    id: string;
+    student_name: string;
+    location: string;
+    district: string;
+    stream: string;
+    completed_at: string;
+  }>;
 }
 
 const Dashboard: React.FC = () => {
   const [streamFilter, setStreamFilter] = useState<string>('all');
   const [districtFilter, setDistrictFilter] = useState<string>('all');
-  const [colleges, setColleges] = useState<any[]>([]);
+  const [searchTerm, setSearchTerm] = useState<string>('');
+  const [quizSessions, setQuizSessions] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
-  // Fetch colleges from Supabase
+  // Color scheme
+  const COLORS: Record<string, string> = {
+    Science: 'hsl(210, 85%, 55%)',
+    Commerce: 'hsl(160, 75%, 50%)',
+    Arts: 'hsl(25, 85%, 60%)',
+    Vocational: 'hsl(280, 75%, 60%)',
+    Government: 'hsl(120, 60%, 50%)',
+    Private: 'hsl(200, 75%, 55%)',
+    Unknown: 'hsl(var(--muted))'
+  };
+
+  // Fetch quiz sessions data from Supabase
   useEffect(() => {
-    const fetchColleges = async () => {
+    const fetchQuizSessions = async () => {
       try {
-        const response = await fetch(`https://iaenrgkstxjthwiecwli.supabase.co/rest/v1/colleges?select=*`, {
-          headers: {
-            'apikey': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlhZW5yZ2tzdHhqdGh3aWVjd2xpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTgzMDQwMTIsImV4cCI6MjA3Mzg4MDAxMn0.U3hNv5emyHwxB2e7s4Juu1chE_pzV5On15lm0wwouwg',
-            'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlhZW5yZ2tzdHhqdGh3aWVjd2xpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTgzMDQwMTIsImV4cCI6MjA3Mzg4MDAxMn0.U3hNv5emyHwxB2e7s4Juu1chE_pzV5On15lm0wwouwg'
-          }
-        });
-        const data = await response.json();
-        const error = !response.ok ? { message: 'Failed to fetch' } : null;
-        
+        const { data, error } = await supabase
+          .from('quiz_sessions')
+          .select('*')
+          .order('completed_at', { ascending: false });
+
         if (error) {
-          console.error('Error fetching colleges:', error);
+          console.error('Error fetching quiz sessions:', error);
         } else {
-          setColleges(data || []);
+          setQuizSessions(data || []);
         }
       } catch (error) {
         console.error('Error:', error);
@@ -63,197 +85,134 @@ const Dashboard: React.FC = () => {
       }
     };
 
-    fetchColleges();
+    fetchQuizSessions();
   }, []);
 
   // Calculate dashboard statistics
   const dashboardStats = useMemo((): DashboardData => {
-    if (loading || colleges.length === 0) {
+    if (loading || quizSessions.length === 0) {
       return {
-        totalColleges: 0,
-        typeDistribution: [],
+        totalStudents: 0,
+        streamDistribution: [],
         districtData: [],
-        streamData: []
+        recentQuizzes: []
       };
     }
 
-    let filteredData = colleges.filter(college => college['College Name']); // Filter out null entries
-    
-    // Apply filters
-    if (streamFilter !== 'all') {
-      filteredData = filteredData.filter(college => {
-        const courses = college['Courses Offered (Categorized Streams)'] || '';
-        return courses.toLowerCase().includes(streamFilter.toLowerCase());
-      });
-    }
-    
-    if (districtFilter !== 'all') {
-      filteredData = filteredData.filter(college => 
-        college['District'] === districtFilter
-      );
-    }
+    const totalStudents = quizSessions.length;
 
-    const totalColleges = filteredData.length;
-    
-    // Type distribution (Government vs Private)
-    const typeCounts = filteredData.reduce((acc: Record<string, number>, college) => {
-      const type = college['Type'] || 'Unknown';
-      const category = type.toLowerCase().includes('govt') || type.toLowerCase().includes('government') 
-        ? 'Government' 
-        : type.toLowerCase().includes('private') || type.toLowerCase().includes('pvt')
-        ? 'Private'
-        : 'Other';
-      acc[category] = (acc[category] || 0) + 1;
-      return acc;
-    }, {} as Record<string, number>);
+    // Filter sessions based on search and filters
+    const filteredSessions = quizSessions.filter(session => {
+      const matchesSearch = session.student_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                           session.district.toLowerCase().includes(searchTerm.toLowerCase());
+      
+      const matchesStreamFilter = streamFilter === 'all' || 
+                                 session.stream.toLowerCase() === streamFilter.toLowerCase();
+      
+      const matchesDistrictFilter = districtFilter === 'all' || 
+                                   session.district.toLowerCase().includes(districtFilter.toLowerCase());
 
-    const typeDistribution = Object.entries(typeCounts).map(([type, count]) => ({
-      type,
+      return matchesSearch && matchesStreamFilter && matchesDistrictFilter;
+    });
+
+    // Stream distribution
+    const streamCounts: Record<string, number> = {};
+    quizSessions.forEach(session => {
+      const stream = session.stream || 'Unknown';
+      streamCounts[stream] = (streamCounts[stream] || 0) + 1;
+    });
+
+    const streamDistribution = Object.entries(streamCounts).map(([stream, count]) => ({
+      stream,
       count: Number(count),
-      percentage: Math.round((Number(count) / totalColleges) * 100)
+      percentage: Math.round((Number(count) / totalStudents) * 100)
     }));
 
     // District data
-    const districtCounts = filteredData.reduce((acc: Record<string, number>, college) => {
-      const district = college['District'] || 'Unknown';
-      acc[district] = (acc[district] || 0) + 1;
-      return acc;
-    }, {} as Record<string, number>);
+    const districtCounts: Record<string, number> = {};
+    quizSessions.forEach(session => {
+      const district = session.district || 'Unknown';
+      districtCounts[district] = (districtCounts[district] || 0) + 1;
+    });
 
     const districtData = Object.entries(districtCounts).map(([district, count]) => ({
       district,
       count: Number(count)
     }));
 
-    // Stream data
-    const streamCounts = filteredData.reduce((acc: Record<string, number>, college) => {
-      const courses = college['Courses Offered (Categorized Streams)'] || '';
-      const coursesLower = courses.toLowerCase();
-      
-      if (coursesLower.includes('science') || coursesLower.includes('tech')) {
-        acc['Science'] = (acc['Science'] || 0) + 1;
-      }
-      if (coursesLower.includes('commerce') || coursesLower.includes('mgt') || coursesLower.includes('comm')) {
-        acc['Commerce'] = (acc['Commerce'] || 0) + 1;
-      }
-      if (coursesLower.includes('arts') || coursesLower.includes('law')) {
-        acc['Arts'] = (acc['Arts'] || 0) + 1;
-      }
-      
-      return acc;
-    }, {} as Record<string, number>);
-
-    const streamData = Object.entries(streamCounts).map(([stream, count]) => ({
-      stream,
-      count: Number(count)
+    // Recent quizzes (last 10)
+    const recentQuizzes = quizSessions.slice(0, 10).map(session => ({
+      id: session.id,
+      student_name: session.student_name,
+      location: session.location,
+      district: session.district,
+      stream: session.stream,
+      completed_at: session.completed_at
     }));
 
     return {
-      totalColleges,
-      typeDistribution,
-      districtData,
-      streamData
+      totalStudents,
+      streamDistribution,
+      districtData: districtData.slice(0, 10), // Top 10 districts
+      recentQuizzes
     };
-  }, [colleges, streamFilter, districtFilter, loading]);
-
-  // Chart colors
-  const COLORS: Record<string, string> = {
-    Science: 'hsl(195, 85%, 45%)',
-    Commerce: 'hsl(35, 85%, 55%)', 
-    Arts: 'hsl(145, 65%, 45%)',
-    Government: 'hsl(195, 85%, 45%)',
-    Private: 'hsl(35, 85%, 55%)',
-    Other: 'hsl(145, 65%, 45%)'
-  };
-
-  // Get unique districts and streams for filters
-  const uniqueDistricts = [...new Set(colleges.map(college => college['District']).filter(Boolean))];
-  const uniqueStreams = ['science', 'commerce', 'arts'];
+  }, [quizSessions, searchTerm, streamFilter, districtFilter, loading]);
 
   return (
     <div className="min-h-screen py-8 px-4 bg-gradient-to-br from-background to-muted/30">
       <div className="container mx-auto max-w-7xl">
         {/* Header */}
-        <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8">
-          <div>
-            <h1 className="text-3xl md:text-4xl font-bold mb-2">College Dashboard</h1>
-            <p className="text-lg text-muted-foreground">
-              J&K colleges analytics and insights
-            </p>
-          </div>
-          
-          <div className="flex flex-col sm:flex-row gap-4 mt-4 md:mt-0">
-            <Select value={streamFilter} onValueChange={setStreamFilter}>
-              <SelectTrigger className="w-40">
-                <SelectValue placeholder="Filter by Stream" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All Streams</SelectItem>
-                {uniqueStreams.map(stream => (
-                  <SelectItem key={stream} value={stream} className="capitalize">{stream}</SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-            
-            <Select value={districtFilter} onValueChange={setDistrictFilter}>
-              <SelectTrigger className="w-40">
-                <SelectValue placeholder="Filter by District" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All Districts</SelectItem>
-                {uniqueDistricts.map(district => (
-                  <SelectItem key={district} value={district}>{district}</SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
+        <div className="text-center mb-8">
+          <h1 className="text-3xl md:text-4xl font-bold mb-4">Student Analytics Dashboard</h1>
+          <p className="text-lg text-muted-foreground">
+            Insights into quiz participation and student career preferences
+          </p>
         </div>
 
-        {/* Stats Cards */}
+        {/* Statistics Overview */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-          <Card className="card-gradient shadow-soft border-0">
+          <Card className="card-gradient shadow-medium border-0">
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm font-medium text-muted-foreground">Total Colleges</p>
-                  <p className="text-2xl font-bold">{loading ? 'Loading...' : dashboardStats.totalColleges}</p>
-                </div>
-                <div className="p-2 rounded-full bg-primary/10 text-primary">
-                  <Building className="h-6 w-6" />
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card className="card-gradient shadow-soft border-0">
-            <CardContent className="p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm font-medium text-muted-foreground">Government Colleges</p>
-                   <p className="text-2xl font-bold">
-                     {loading ? 'Loading...' : String(dashboardStats.typeDistribution.find(t => t.type === 'Government')?.count || 0)}
-                   </p>
-                </div>
-                <div className="p-2 rounded-full bg-success/10 text-success">
-                  <TrendingUp className="h-6 w-6" />
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card className="card-gradient shadow-soft border-0">
-            <CardContent className="p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm font-medium text-muted-foreground">Most Common Stream</p>
+                  <p className="text-sm font-medium text-muted-foreground">Total Students</p>
                   <p className="text-2xl font-bold">
-                    {loading ? 'Loading...' : (dashboardStats.streamData.length > 0 ? (dashboardStats.streamData.reduce((max, current) => 
-                      current.count > max.count ? current : max, 
-                      dashboardStats.streamData[0]
-                    )?.stream || 'N/A') : 'N/A')}
+                    {loading ? 'Loading...' : String(dashboardStats.totalStudents)}
                   </p>
                 </div>
-                <div className="p-2 rounded-full bg-accent/10 text-accent">
+                <div className="p-2 rounded-full bg-primary/10 text-primary">
+                  <Users className="h-6 w-6" />
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card className="card-gradient shadow-soft border-0">
+            <CardContent className="p-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm font-medium text-muted-foreground">Science Stream</p>
+                  <p className="text-2xl font-bold">
+                    {loading ? 'Loading...' : String(dashboardStats.streamDistribution.find(s => s.stream === 'Science')?.count || 0)}
+                  </p>
+                </div>
+                <div className="p-2 rounded-full bg-info/10 text-info">
+                  <BookOpen className="h-6 w-6" />
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card className="card-gradient shadow-soft border-0">
+            <CardContent className="p-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm font-medium text-muted-foreground">Arts Stream</p>
+                  <p className="text-2xl font-bold">
+                    {loading ? 'Loading...' : String(dashboardStats.streamDistribution.find(s => s.stream === 'Arts')?.count || 0)}
+                  </p>
+                </div>
+                <div className="p-2 rounded-full bg-warning/10 text-warning">
                   <GraduationCap className="h-6 w-6" />
                 </div>
               </div>
@@ -264,173 +223,141 @@ const Dashboard: React.FC = () => {
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm font-medium text-muted-foreground">Districts Covered</p>
-                  <p className="text-2xl font-bold">{loading ? 'Loading...' : dashboardStats.districtData.length}</p>
+                  <p className="text-sm font-medium text-muted-foreground">Commerce Stream</p>
+                  <p className="text-2xl font-bold">
+                    {loading ? 'Loading...' : String(dashboardStats.streamDistribution.find(s => s.stream === 'Commerce')?.count || 0)}
+                  </p>
                 </div>
-                <div className="p-2 rounded-full bg-primary/10 text-primary">
-                  <MapPin className="h-6 w-6" />
+                <div className="p-2 rounded-full bg-secondary/10 text-secondary">
+                  <TrendingUp className="h-6 w-6" />
                 </div>
               </div>
             </CardContent>
           </Card>
         </div>
 
+        {/* Statistics Charts */}
         <div className="grid lg:grid-cols-2 gap-8 mb-8">
-          {/* College Type Distribution Pie Chart */}
+          {/* Stream Distribution */}
           <Card className="card-gradient shadow-medium border-0">
             <CardHeader>
               <CardTitle className="flex items-center">
-                <PieChartIcon className="h-5 w-5 mr-2" />
-                Colleges by Type
+                <BarChart className="h-5 w-5 mr-2" />
+                Student Stream Distribution
               </CardTitle>
             </CardHeader>
             <CardContent>
-              {loading ? (
-                <div className="h-80 flex items-center justify-center">
-                  <p>Loading...</p>
-                </div>
-              ) : (
-                <div className="h-80">
-                  <ResponsiveContainer width="100%" height="100%">
-                    <PieChart>
-                      <Pie
-                        data={dashboardStats.typeDistribution}
-                        cx="50%"
-                        cy="50%"
-                        outerRadius={100}
-                        dataKey="count"
-                        label={(entry: any) => `${entry.type} (${entry.percentage}%)`}
-                      >
-                        {dashboardStats.typeDistribution.map((entry) => (
-                          <Cell key={entry.type} fill={COLORS[entry.type] || 'hsl(var(--muted))'} />
-                        ))}
-                      </Pie>
-                      <Tooltip formatter={(value: any, name: any) => [value, 'Colleges']} />
-                    </PieChart>
-                  </ResponsiveContainer>
-                </div>
-              )}
-              
+              <div className="h-80">
+                <ResponsiveContainer width="100%" height="100%">
+                  <PieChart>
+                    <Pie
+                      data={dashboardStats.streamDistribution}
+                      cx="50%"
+                      cy="50%"
+                      innerRadius={60}
+                      outerRadius={120}
+                      paddingAngle={5}
+                      dataKey="count"
+                    >
+                      {dashboardStats.streamDistribution.map((entry, index) => (
+                        <Cell key={`cell-${index}`} fill={COLORS[entry.stream] || 'hsl(var(--muted))'} />
+                      ))}
+                    </Pie>
+                    <Tooltip formatter={(value: any, name: any, props: any) => [value, props.payload.stream]} />
+                  </PieChart>
+                </ResponsiveContainer>
+              </div>
               <div className="flex flex-wrap gap-2 mt-4">
-                {dashboardStats.typeDistribution.map(item => (
-                  <div key={item.type} className="flex items-center space-x-2">
+                {dashboardStats.streamDistribution.map((item) => (
+                  <div key={item.stream} className="flex items-center space-x-2">
                     <div 
                       className="w-3 h-3 rounded-full" 
-                      style={{ backgroundColor: COLORS[item.type] || 'hsl(var(--muted))' }}
+                      style={{ backgroundColor: COLORS[item.stream] || 'hsl(var(--muted))' }}
                     />
-                    <span className="text-sm">{item.type}: {String(item.count)}</span>
+                    <span className="text-sm">{item.stream}: {String(item.count)}</span>
                   </div>
                 ))}
               </div>
             </CardContent>
           </Card>
 
-          {/* District Distribution Bar Chart */}
+          {/* Districts by Student Count */}
           <Card className="card-gradient shadow-medium border-0">
             <CardHeader>
               <CardTitle className="flex items-center">
-                <BarChart3 className="h-5 w-5 mr-2" />
-                Colleges by District
+                <MapPin className="h-5 w-5 mr-2" />
+                Top Districts by Student Count
               </CardTitle>
             </CardHeader>
             <CardContent>
-              {loading ? (
-                <div className="h-80 flex items-center justify-center">
-                  <p>Loading...</p>
-                </div>
-              ) : (
-                <div className="h-80">
-                  <ResponsiveContainer width="100%" height="100%">
-                    <BarChart data={dashboardStats.districtData.slice(0, 10)}>
-                      <CartesianGrid strokeDasharray="3 3" />
-                      <XAxis 
-                        dataKey="district" 
-                        angle={-45}
-                        textAnchor="end"
-                        height={100}
-                      />
-                      <YAxis />
-                  <Tooltip formatter={(value: any, name: any) => [value, 'Colleges']} />
-                      <Bar dataKey="count" fill="hsl(195, 85%, 45%)" radius={[4, 4, 0, 0]} />
-                    </BarChart>
-                  </ResponsiveContainer>
-                </div>
-              )}
+              <div className="h-80">
+                <ResponsiveContainer width="100%" height="100%">
+                  <BarChart data={dashboardStats.districtData}>
+                    <CartesianGrid strokeDasharray="3 3" />
+                    <XAxis 
+                      dataKey="district" 
+                      tick={{ fontSize: 12 }}
+                      angle={-45}
+                      textAnchor="end"
+                      height={80}
+                    />
+                    <YAxis />
+                    <Tooltip />
+                    <Bar dataKey="count" fill="hsl(var(--primary))" />
+                  </BarChart>
+                </ResponsiveContainer>
+              </div>
             </CardContent>
           </Card>
         </div>
 
-        {/* Stream Distribution Bar Chart */}
+        {/* Recent Quiz Sessions */}
         <Card className="card-gradient shadow-medium border-0 mb-8">
           <CardHeader>
             <CardTitle className="flex items-center">
-              <BarChart3 className="h-5 w-5 mr-2" />
-              Colleges Offering Different Streams
+              <Calendar className="h-5 w-5 mr-2" />
+              Recent Student Assessments
             </CardTitle>
+            <p className="text-muted-foreground">
+              Latest quiz sessions from students across different districts
+            </p>
           </CardHeader>
           <CardContent>
             {loading ? (
-              <div className="h-80 flex items-center justify-center">
-                <p>Loading...</p>
+              <div className="text-center py-8">
+                <p className="text-muted-foreground">Loading recent assessments...</p>
+              </div>
+            ) : dashboardStats.recentQuizzes.length === 0 ? (
+              <div className="text-center py-8">
+                <BookOpen className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
+                <p className="text-muted-foreground">No quiz sessions found.</p>
               </div>
             ) : (
-              <div className="h-80">
-                <ResponsiveContainer width="100%" height="100%">
-                  <BarChart data={dashboardStats.streamData}>
-                    <CartesianGrid strokeDasharray="3 3" />
-                    <XAxis dataKey="stream" />
-                    <YAxis />
-                    <Tooltip formatter={(value: any, name: any) => [value, 'Colleges']} />
-                    <Bar dataKey="count" fill="hsl(195, 85%, 45%)" radius={[4, 4, 0, 0]} />
-                  </BarChart>
-                </ResponsiveContainer>
-              </div>
-            )}
-          </CardContent>
-        </Card>
-
-        {/* Recent Colleges */}
-        <Card className="card-gradient shadow-medium border-0">
-          <CardHeader>
-            <CardTitle>College Database</CardTitle>
-          </CardHeader>
-          <CardContent>
-            {loading ? (
-              <div className="p-8 text-center">
-                <p>Loading colleges...</p>
-              </div>
-            ) : (
-              <div className="overflow-x-auto">
-                <table className="w-full">
-                  <thead>
-                    <tr className="border-b">
-                      <th className="text-left py-2">College Name</th>
-                      <th className="text-left py-2">Type</th>
-                      <th className="text-left py-2">District</th>
-                      <th className="text-left py-2">Area</th>
-                      <th className="text-left py-2">Courses</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {colleges.slice(0, 10).filter(college => college['College Name']).map((college, index) => (
-                    <tr key={index} className="border-b">
-                        <td className="py-3 font-medium">{college['College Name'] || 'Unknown'}</td>
-                        <td className="py-3">
-                          <Badge 
-                            variant={(college['Type'] && college['Type'].toLowerCase().includes('govt')) ? 'default' : 'secondary'}
-                          >
-                            {(college['Type'] && college['Type'].includes('Govt')) ? 'Government' : 'Private'}
-                          </Badge>
-                        </td>
-                        <td className="py-3">{college['District'] || 'Unknown'}</td>
-                        <td className="py-3">{college['Urban/Rural Status'] || 'Unknown'}</td>
-                        <td className="py-3 text-muted-foreground max-w-xs truncate">
-                          {college['Courses Offered (Categorized Streams)'] || 'No courses listed'}
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
+              <div className="space-y-4">
+                {dashboardStats.recentQuizzes.map((quiz) => (
+                  <Card key={quiz.id} className="border shadow-sm">
+                    <CardContent className="p-4">
+                      <div className="flex justify-between items-start">
+                        <div className="flex-1">
+                          <div className="flex items-center space-x-2 mb-2">
+                            <h3 className="font-semibold">{quiz.student_name}</h3>
+                            <Badge variant="secondary">{quiz.stream}</Badge>
+                          </div>
+                          <div className="flex items-center space-x-4 text-sm text-muted-foreground">
+                            <div className="flex items-center space-x-1">
+                              <MapPin className="h-4 w-4" />
+                              <span>{quiz.location}, {quiz.district}</span>
+                            </div>
+                            <div className="flex items-center space-x-1">
+                              <Clock className="h-4 w-4" />
+                              <span>{new Date(quiz.completed_at).toLocaleDateString()}</span>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                ))}
               </div>
             )}
           </CardContent>

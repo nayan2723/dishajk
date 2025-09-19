@@ -14,6 +14,72 @@ export type Database = {
   }
   public: {
     Tables: {
+      colleges: {
+        Row: {
+          "College Name": string | null
+          "Courses Offered (Categorized Streams)": string | null
+          District: string | null
+          Type: string | null
+          "Urban/Rural Status": string | null
+          "Working College Link": string | null
+        }
+        Insert: {
+          "College Name"?: string | null
+          "Courses Offered (Categorized Streams)"?: string | null
+          District?: string | null
+          Type?: string | null
+          "Urban/Rural Status"?: string | null
+          "Working College Link"?: string | null
+        }
+        Update: {
+          "College Name"?: string | null
+          "Courses Offered (Categorized Streams)"?: string | null
+          District?: string | null
+          Type?: string | null
+          "Urban/Rural Status"?: string | null
+          "Working College Link"?: string | null
+        }
+        Relationships: []
+      }
+      quiz_sessions: {
+        Row: {
+          completed_at: string
+          created_at: string
+          district: string
+          id: string
+          location: string
+          quiz_answers: Json
+          score: number
+          stream: string
+          student_name: string
+          user_profile: Json
+        }
+        Insert: {
+          completed_at?: string
+          created_at?: string
+          district: string
+          id?: string
+          location: string
+          quiz_answers: Json
+          score: number
+          stream: string
+          student_name: string
+          user_profile: Json
+        }
+        Update: {
+          completed_at?: string
+          created_at?: string
+          district?: string
+          id?: string
+          location?: string
+          quiz_answers?: Json
+          score?: number
+          stream?: string
+          student_name?: string
+          user_profile?: Json
+        }
+        Relationships: []
+      }
       students: {
         Row: {
           created_at: string
