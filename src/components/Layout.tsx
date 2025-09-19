@@ -115,7 +115,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
             <div className="flex items-center space-x-2 mb-4 md:mb-0">
               <GraduationCap className="h-5 w-5 text-primary" />
               <span className="text-sm text-muted-foreground">
-                © 2024 Disha - Personalized Career & Education Advisor
+                © 2025 Disha - Personalized Career & Education Advisor
               </span>
             </div>
             <div className="flex space-x-4 text-sm text-muted-foreground">
