@@ -3,7 +3,11 @@ import { motion } from 'framer-motion';
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
-import { ClipboardList, Target, BarChart3, Users, Award, TrendingUp, Star, ArrowRight } from 'lucide-react';
+import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
+import { Label } from '@/components/ui/label';
+import { ClipboardList, Target, BarChart3, Users, Award, TrendingUp, Star, ArrowRight, Mail, MapPin, Phone, Eye, Heart, Lightbulb } from 'lucide-react';
+import { useForm } from 'react-hook-form';
 import HeroCarousel from '@/components/HeroCarousel';
 import { HeroGeometric } from '@/components/ui/shape-landing-hero';
 
@@ -60,6 +64,32 @@ const Home: React.FC = () => {
     }
   };
 
+  const { register, handleSubmit, formState: { errors }, reset } = useForm();
+
+  const onSubmit = (data: any) => {
+    console.log('Form submitted:', data);
+    // Handle form submission here
+    reset();
+  };
+
+  const aboutCards = [
+    {
+      icon: Eye,
+      title: 'Our Mission',
+      description: 'Empowering students with personalized career guidance through innovative technology.',
+    },
+    {
+      icon: Heart,
+      title: 'Our Vision',
+      description: 'Creating a future where every student finds their perfect career path.',
+    },
+    {
+      icon: Lightbulb,
+      title: 'Our Values',
+      description: 'Innovation, integrity, and inclusive education for all students.',
+    },
+  ];
+
   return (
     <div className="w-full">
       {/* Hero Section with Geometric Shapes */}
@@ -68,6 +98,283 @@ const Home: React.FC = () => {
         title1="Your Personalized Career &"
         title2="Education Advisor"
       />
+
+      {/* About Section */}
+      <section className="py-20 px-4 relative overflow-hidden" style={{
+        background: 'linear-gradient(135deg, hsl(220 25% 12%) 0%, hsl(270 50% 20%) 50%, hsl(260 60% 25%) 100%)'
+      }}>
+        <div className="container mx-auto">
+          <div className="grid lg:grid-cols-2 gap-16 items-center mb-16">
+            {/* Left: Text Content */}
+            <motion.div
+              initial={{ opacity: 0, x: -50 }}
+              whileInView={{ opacity: 1, x: 0 }}
+              transition={{ duration: 0.8 }}
+              viewport={{ once: true }}
+            >
+              <h2 className="text-4xl md:text-5xl font-bold mb-6 gradient-text">
+                About Us
+              </h2>
+              <p className="text-lg text-white/80 leading-relaxed mb-8">
+                We are revolutionizing career guidance through cutting-edge technology and personalized insights. 
+                Our platform combines AI-driven assessments with expert knowledge to help students in Jammu & Kashmir 
+                discover their ideal career paths and make informed educational decisions.
+              </p>
+              <div className="flex flex-wrap gap-4">
+                <div className="px-6 py-2 glassmorphism rounded-full">
+                  <span className="text-white/90 text-sm font-medium">AI-Powered</span>
+                </div>
+                <div className="px-6 py-2 glassmorphism rounded-full">
+                  <span className="text-white/90 text-sm font-medium">Personalized</span>
+                </div>
+                <div className="px-6 py-2 glassmorphism rounded-full">
+                  <span className="text-white/90 text-sm font-medium">Future-Ready</span>
+                </div>
+              </div>
+            </motion.div>
+
+            {/* Right: Futuristic Illustration */}
+            <motion.div
+              initial={{ opacity: 0, x: 50 }}
+              whileInView={{ opacity: 1, x: 0 }}
+              transition={{ duration: 0.8, delay: 0.2 }}
+              viewport={{ once: true }}
+              className="flex justify-center"
+            >
+              <div className="relative w-80 h-80">
+                <div className="absolute inset-0 bg-gradient-to-r from-purple-500/20 to-blue-500/20 rounded-full blur-3xl"></div>
+                <div className="relative w-full h-full glassmorphism rounded-3xl flex items-center justify-center">
+                  <div className="text-6xl text-white/80">🚀</div>
+                </div>
+                <div className="absolute -top-4 -right-4 w-24 h-24 glassmorphism rounded-full flex items-center justify-center">
+                  <div className="text-2xl">✨</div>
+                </div>
+                <div className="absolute -bottom-4 -left-4 w-20 h-20 glassmorphism rounded-full flex items-center justify-center">
+                  <div className="text-xl">🎯</div>
+                </div>
+              </div>
+            </motion.div>
+          </div>
+
+          {/* Mini Cards */}
+          <motion.div
+            className="grid md:grid-cols-3 gap-8"
+            initial={{ opacity: 0, y: 50 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8, delay: 0.4 }}
+            viewport={{ once: true }}
+          >
+            {aboutCards.map((card, index) => {
+              const Icon = card.icon;
+              return (
+                <motion.div
+                  key={index}
+                  className="glassmorphism p-6 rounded-2xl shadow-strong hover:shadow-medium transition-smooth"
+                  whileHover={{ y: -5, scale: 1.02 }}
+                  initial={{ opacity: 0, y: 30 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.6, delay: 0.5 + index * 0.1 }}
+                  viewport={{ once: true }}
+                >
+                  <div className="flex items-center mb-4">
+                    <div className="p-3 bg-gradient-to-r from-purple-500 to-blue-500 rounded-full mr-4">
+                      <Icon className="h-6 w-6 text-white" />
+                    </div>
+                    <h3 className="text-xl font-semibold text-white">{card.title}</h3>
+                  </div>
+                  <p className="text-white/70">{card.description}</p>
+                </motion.div>
+              );
+            })}
+          </motion.div>
+        </div>
+      </section>
+
+      {/* Contact Us Section */}
+      <section className="py-20 px-4 relative overflow-hidden bg-black">
+        <div className="absolute inset-0 bg-gradient-to-br from-black via-purple-900/10 to-blue-900/10"></div>
+        <div className="container mx-auto relative z-10">
+          <motion.div
+            className="text-center mb-16"
+            initial={{ opacity: 0, y: 30 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8 }}
+            viewport={{ once: true }}
+          >
+            <h2 className="text-4xl md:text-5xl font-bold text-white mb-4">
+              Get in <span className="relative">
+                Touch
+                <div className="absolute -bottom-2 left-0 w-full h-1 bg-gradient-to-r from-purple-500 to-blue-500 rounded-full"></div>
+              </span>
+            </h2>
+            <p className="text-xl text-white/70 max-w-2xl mx-auto">
+              We'd love to hear from you. Fill out the form or connect with us.
+            </p>
+          </motion.div>
+
+          <div className="grid lg:grid-cols-2 gap-16 items-start">
+            {/* Contact Form */}
+            <motion.div
+              initial={{ opacity: 0, x: -50 }}
+              whileInView={{ opacity: 1, x: 0 }}
+              transition={{ duration: 0.8 }}
+              viewport={{ once: true }}
+            >
+              <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+                <motion.div
+                  initial={{ opacity: 0, y: 20 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.6, delay: 0.1 }}
+                  viewport={{ once: true }}
+                >
+                  <Label htmlFor="name" className="text-white/90 mb-2 block">Name</Label>
+                  <Input
+                    id="name"
+                    {...register('name', { required: 'Name is required' })}
+                    className="glassmorphism border-white/20 text-white placeholder:text-white/50 focus:border-purple-500"
+                    placeholder="Your full name"
+                  />
+                  {errors.name && <p className="text-red-400 text-sm mt-1">{errors.name.message as string}</p>}
+                </motion.div>
+
+                <motion.div
+                  initial={{ opacity: 0, y: 20 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.6, delay: 0.2 }}
+                  viewport={{ once: true }}
+                >
+                  <Label htmlFor="email" className="text-white/90 mb-2 block">Email</Label>
+                  <Input
+                    id="email"
+                    type="email"
+                    {...register('email', { required: 'Email is required' })}
+                    className="glassmorphism border-white/20 text-white placeholder:text-white/50 focus:border-purple-500"
+                    placeholder="your@email.com"
+                  />
+                  {errors.email && <p className="text-red-400 text-sm mt-1">{errors.email.message as string}</p>}
+                </motion.div>
+
+                <motion.div
+                  initial={{ opacity: 0, y: 20 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.6, delay: 0.3 }}
+                  viewport={{ once: true }}
+                >
+                  <Label htmlFor="message" className="text-white/90 mb-2 block">Message</Label>
+                  <Textarea
+                    id="message"
+                    {...register('message', { required: 'Message is required' })}
+                    className="glassmorphism border-white/20 text-white placeholder:text-white/50 focus:border-purple-500 min-h-[120px]"
+                    placeholder="Tell us how we can help you..."
+                  />
+                  {errors.message && <p className="text-red-400 text-sm mt-1">{errors.message.message as string}</p>}
+                </motion.div>
+
+                <motion.div
+                  initial={{ opacity: 0, y: 20 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.6, delay: 0.4 }}
+                  viewport={{ once: true }}
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                >
+                  <Button
+                    type="submit"
+                    size="lg"
+                    className="w-full rounded-full bg-gradient-to-r from-purple-500 to-blue-500 hover:from-purple-600 hover:to-blue-600 text-white font-semibold py-4 shadow-strong transition-smooth"
+                  >
+                    Send Message
+                  </Button>
+                </motion.div>
+              </form>
+            </motion.div>
+
+            {/* Contact Info */}
+            <motion.div
+              initial={{ opacity: 0, x: 50 }}
+              whileInView={{ opacity: 1, x: 0 }}
+              transition={{ duration: 0.8, delay: 0.2 }}
+              viewport={{ once: true }}
+              className="space-y-8"
+            >
+              <div className="glassmorphism p-8 rounded-2xl">
+                <h3 className="text-2xl font-semibold text-white mb-6">Other Ways to Reach Us</h3>
+                
+                <div className="space-y-6">
+                  <motion.div
+                    className="flex items-center space-x-4"
+                    whileHover={{ x: 10 }}
+                    transition={{ duration: 0.2 }}
+                  >
+                    <div className="p-3 bg-gradient-to-r from-purple-500 to-blue-500 rounded-full">
+                      <Mail className="h-5 w-5 text-white" />
+                    </div>
+                    <div>
+                      <p className="text-white/90 font-medium">Email</p>
+                      <a href="mailto:hello@disha.career" className="text-white/70 hover:text-purple-400 transition-smooth">
+                        hello@disha.career
+                      </a>
+                    </div>
+                  </motion.div>
+
+                  <motion.div
+                    className="flex items-center space-x-4"
+                    whileHover={{ x: 10 }}
+                    transition={{ duration: 0.2 }}
+                  >
+                    <div className="p-3 bg-gradient-to-r from-purple-500 to-blue-500 rounded-full">
+                      <Phone className="h-5 w-5 text-white" />
+                    </div>
+                    <div>
+                      <p className="text-white/90 font-medium">Phone</p>
+                      <a href="tel:+911234567890" className="text-white/70 hover:text-purple-400 transition-smooth">
+                        +91 123 456 7890
+                      </a>
+                    </div>
+                  </motion.div>
+
+                  <motion.div
+                    className="flex items-center space-x-4"
+                    whileHover={{ x: 10 }}
+                    transition={{ duration: 0.2 }}
+                  >
+                    <div className="p-3 bg-gradient-to-r from-purple-500 to-blue-500 rounded-full">
+                      <MapPin className="h-5 w-5 text-white" />
+                    </div>
+                    <div>
+                      <p className="text-white/90 font-medium">Location</p>
+                      <p className="text-white/70">Jammu & Kashmir, India</p>
+                    </div>
+                  </motion.div>
+                </div>
+              </div>
+
+              {/* Social Media */}
+              <motion.div
+                className="glassmorphism p-6 rounded-2xl"
+                initial={{ opacity: 0, y: 30 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.6, delay: 0.5 }}
+                viewport={{ once: true }}
+              >
+                <h4 className="text-lg font-semibold text-white mb-4">Follow Us</h4>
+                <div className="flex space-x-4">
+                  {['📘', '🐦', '💼', '📷'].map((icon, index) => (
+                    <motion.button
+                      key={index}
+                      className="w-12 h-12 glassmorphism rounded-full flex items-center justify-center text-white hover:bg-white/20 transition-smooth"
+                      whileHover={{ scale: 1.1, y: -2 }}
+                      whileTap={{ scale: 0.95 }}
+                    >
+                      {icon}
+                    </motion.button>
+                  ))}
+                </div>
+              </motion.div>
+            </motion.div>
+          </div>
+        </div>
+      </section>
 
       {/* Hero Carousel Section */}
       <section className="py-20 px-4 bg-background">
