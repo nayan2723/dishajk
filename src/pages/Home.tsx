@@ -39,48 +39,31 @@ const Home: React.FC = () => {
   return (
     <div className="w-full">
       {/* Hero Section */}
-      <section className="relative py-20 px-4 hero-gradient overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-r from-primary/10 via-transparent to-accent/10" />
-        <div 
-          className="absolute inset-0 bg-cover bg-center bg-no-repeat opacity-20" 
-          style={{ backgroundImage: `url(${heroImage})` }}
-        />
-        <div className="container mx-auto relative z-10">
-          <div className="max-w-4xl mx-auto text-center text-white">
-            <h1 className="text-4xl md:text-6xl font-bold mb-6 animate-fade-in">
-              Welcome to{' '}
-              <span className="bg-gradient-to-r from-white to-accent-foreground bg-clip-text text-transparent">
-                Disha
-              </span>
-            </h1>
-            <p className="text-xl md:text-2xl mb-8 text-white/90 animate-slide-up">
-              Personalized Career & Education Advisor
-            </p>
-            <p className="text-lg mb-10 text-white/80 max-w-2xl mx-auto animate-slide-up">
-              Discover your ideal career path through our comprehensive assessment. 
-              Get personalized recommendations for streams, courses, and colleges 
-              that align with your unique interests and skills.
-            </p>
-            
-            <div className="flex flex-col sm:flex-row gap-4 justify-center animate-bounce-in">
-              <Button size="lg" asChild className="bg-white text-primary hover:bg-white/90 shadow-medium">
-                <Link to="/quiz" className="flex items-center space-x-2">
-                  <ClipboardList className="h-5 w-5" />
-                  <span>Take Quiz</span>
-                </Link>
-              </Button>
-              <Button variant="outline" size="lg" asChild className="border-white text-white hover:bg-white hover:text-primary">
-                <Link to="/recommendations" className="flex items-center space-x-2">
-                  <Target className="h-5 w-5" />
-                  <span>View Recommendations</span>
-                </Link>
-              </Button>
-              <Button variant="outline" size="lg" asChild className="border-white text-white hover:bg-white hover:text-primary">
-                <Link to="/dashboard" className="flex items-center space-x-2">
-                  <BarChart3 className="h-5 w-5" />
-                  <span>Admin Dashboard</span>
-                </Link>
-              </Button>
+      <section className="hero-gradient text-white py-20 px-4 text-center">
+        <div className="container mx-auto max-w-4xl">
+          <div className="flex flex-col lg:flex-row items-center justify-between">
+            <div className="lg:w-1/2 mb-8 lg:mb-0">
+              <h1 className="text-4xl md:text-6xl font-bold mb-6 animate-fade-in">
+                Discover Your Perfect Career Path
+              </h1>
+              <p className="text-xl md:text-2xl mb-8 opacity-90 animate-fade-in">
+                Personalized Career & Education Advisor for Jammu & Kashmir Students
+              </p>
+              <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start animate-fade-in">
+                <Button size="lg" variant="secondary" asChild className="text-lg px-8 py-3">
+                  <Link to="/quiz">Take Assessment</Link>
+                </Button>
+                <Button size="lg" variant="outline" asChild className="text-lg px-8 py-3 border-white text-white hover:bg-white hover:text-primary">
+                  <Link to="/dashboard">View Analytics</Link>
+                </Button>
+              </div>
+            </div>
+            <div className="lg:w-1/2 flex justify-center">
+              <img 
+                src={heroImage} 
+                alt="Career guidance illustration" 
+                className="max-w-full h-auto rounded-lg shadow-strong hero-image-animate"
+              />
             </div>
           </div>
         </div>

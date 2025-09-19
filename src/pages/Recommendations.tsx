@@ -15,10 +15,12 @@ import {
   ChevronDown,
   ChevronUp,
   BookOpen,
-  Building
+  Building,
+  FileText
 } from 'lucide-react';
 import { useQuiz } from '../context/QuizContext';
 import { generatePDFReport } from '../utils/pdfGenerator';
+import { generateFlowchartPDF } from '../utils/flowchartGenerator';
 import { useToast } from '@/hooks/use-toast';
 
 const Recommendations: React.FC = () => {
@@ -55,6 +57,25 @@ const Recommendations: React.FC = () => {
     toast({
       title: "Report downloaded!",
       description: "Your personalized career report has been downloaded successfully.",
+    });
+  };
+
+  const handleDownloadFlowchart = () => {
+    if (!result) return;
+    
+    if (!studentName.trim()) {
+      toast({
+        title: "Please enter your name",
+        description: "Your name is required to generate the flowchart.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    generateFlowchartPDF(result, studentName);
+    toast({
+      title: "Flowchart downloaded!",
+      description: "Your career pathway flowchart has been downloaded successfully.",
     });
   };
 
@@ -233,31 +254,59 @@ const Recommendations: React.FC = () => {
         </div>
 
         {/* PDF Download Section */}
-        <Card className="mt-8 card-gradient shadow-medium border-0">
-          <CardHeader>
-            <CardTitle className="flex items-center">
-              <Download className="h-6 w-6 mr-2" />
-              Download Parent-Friendly Report
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <p className="text-muted-foreground">
-              Generate a comprehensive PDF report with your recommendations to share with parents and counselors.
-            </p>
-            <div className="flex flex-col sm:flex-row gap-4">
-              <Input
-                placeholder="Enter your name for the report"
-                value={studentName}
-                onChange={(e) => setStudentName(e.target.value)}
-                className="flex-1"
-              />
-              <Button onClick={handleDownloadReport} className="flex items-center space-x-2">
-                <Download className="h-4 w-4" />
-                <span>Download Report</span>
-              </Button>
-            </div>
-          </CardContent>
-        </Card>
+        <div className="grid md:grid-cols-2 gap-6 mt-8">
+          <Card className="card-gradient shadow-medium border-0">
+            <CardHeader>
+              <CardTitle className="flex items-center">
+                <Download className="h-6 w-6 mr-2" />
+                Download Detailed Report
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <p className="text-muted-foreground">
+                Generate a comprehensive PDF report with your recommendations to share with parents and counselors.
+              </p>
+              <div className="flex flex-col sm:flex-row gap-4">
+                <Input
+                  placeholder="Enter your name for the report"
+                  value={studentName}
+                  onChange={(e) => setStudentName(e.target.value)}
+                  className="flex-1"
+                />
+                <Button onClick={handleDownloadReport} className="flex items-center space-x-2">
+                  <Download className="h-4 w-4" />
+                  <span>Download Report</span>
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card className="card-gradient shadow-medium border-0">
+            <CardHeader>
+              <CardTitle className="flex items-center">
+                <FileText className="h-6 w-6 mr-2" />
+                Download Career Flowchart
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <p className="text-muted-foreground">
+                Get a visual flowchart showing your career pathway from stream selection to future opportunities.
+              </p>
+              <div className="flex flex-col sm:flex-row gap-4">
+                <Input
+                  placeholder="Enter your name for the flowchart"
+                  value={studentName}
+                  onChange={(e) => setStudentName(e.target.value)}
+                  className="flex-1"
+                />
+                <Button onClick={handleDownloadFlowchart} variant="outline" className="flex items-center space-x-2">
+                  <FileText className="h-4 w-4" />
+                  <span>Download Flowchart</span>
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
 
         {/* Next Steps */}
         <Card className="mt-8 bg-primary text-primary-foreground border-0">
