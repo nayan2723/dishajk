@@ -112,8 +112,8 @@ const HeroCarousel: React.FC = () => {
         </CarouselContent>
         
         {/* Navigation Controls */}
-        <CarouselPrevious className="left-4 bg-white/20 border-white/30 text-white hover:bg-white/30" />
-        <CarouselNext className="right-4 bg-white/20 border-white/30 text-white hover:bg-white/30" />
+        <CarouselPrevious className="left-4 bg-background/20 border-border text-foreground hover:bg-background/30" />
+        <CarouselNext className="right-4 bg-background/20 border-border text-foreground hover:bg-background/30" />
       </Carousel>
 
       {/* Pagination Dots */}
@@ -124,8 +124,8 @@ const HeroCarousel: React.FC = () => {
             onClick={() => scrollToSlide(index)}
             className={`w-3 h-3 rounded-full transition-all duration-200 ${
               index + 1 === current
-                ? 'bg-white scale-110'
-                : 'bg-white/40 hover:bg-white/60'
+                ? 'bg-primary scale-110'
+                : 'bg-primary/40 hover:bg-primary/60'
             }`}
             aria-label={`Go to slide ${index + 1}`}
           />

@@ -128,10 +128,26 @@ All colors MUST be HSL.
 
   body {
     @apply bg-background text-foreground font-sans antialiased;
+    transition: background-color 0.3s ease, color 0.3s ease;
   }
 
   html {
     scroll-behavior: smooth;
+  }
+  
+  /* Smooth theme transitions */
+  *,
+  *::before,
+  *::after {
+    transition: 
+      background-color 0.3s ease,
+      border-color 0.3s ease,
+      color 0.3s ease,
+      fill 0.3s ease,
+      stroke 0.3s ease,
+      opacity 0.3s ease,
+      box-shadow 0.3s ease,
+      transform 0.3s ease;
   }
 }
 
@@ -179,6 +195,26 @@ All colors MUST be HSL.
 
   .hero-image-animate {
     animation: float 6s ease-in-out infinite;
+  }
+  
+  /* Enhanced geometric shapes for both themes */
+  .geometric-shape {
+    @apply backdrop-blur-sm border border-primary/20;
+    background: radial-gradient(circle at 50% 50%, hsl(var(--primary) / 0.1), transparent 70%);
+  }
+
+  .dark .geometric-shape {
+    @apply border-white/10;
+    background: radial-gradient(circle at 50% 50%, rgba(255, 255, 255, 0.05), transparent 70%);
+  }
+
+  /* Theme-aware background overlays */
+  .theme-overlay {
+    background: linear-gradient(to bottom, 
+      hsl(var(--background)) 0%, 
+      transparent 20%, 
+      transparent 80%, 
+      hsl(var(--background)) 100%);
   }
 
   @keyframes float {

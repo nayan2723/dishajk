@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { ClipboardList, Target, BarChart3, Users, Award, TrendingUp, Star, ArrowRight } from 'lucide-react';
 import HeroCarousel from '@/components/HeroCarousel';
+import { HeroGeometric } from '@/components/ui/shape-landing-hero';
 
 const Home: React.FC = () => {
   const features = [
@@ -61,46 +62,36 @@ const Home: React.FC = () => {
 
   return (
     <div className="w-full">
-      {/* Hero Section with Carousel */}
-      <section className="relative min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-800 text-white overflow-hidden">
-        {/* Background Pattern */}
-        <div className="absolute inset-0 opacity-10">
-          <div className="absolute inset-0 bg-gradient-to-r from-purple-400/20 to-pink-400/20" />
-        </div>
+      {/* Hero Section with Geometric Shapes */}
+      <HeroGeometric 
+        badge="Disha - Career Guidance"
+        title1="Your Personalized Career &"
+        title2="Education Advisor"
+      />
 
-        <div className="relative z-10 container mx-auto px-4 pt-32 pb-20">
-          <div className="text-center mb-16">
-            {/* Hero Title */}
-            <motion.h1
-              className="text-4xl md:text-6xl lg:text-7xl font-bold mb-6 gradient-text leading-tight"
-              initial={{ opacity: 0, y: 30 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.8 }}
-            >
-              Your Personalized Career &<br />
-              Education Advisor
-            </motion.h1>
+      {/* Hero Carousel Section */}
+      <section className="py-20 px-4 bg-background">
+        <div className="container mx-auto">
+          <motion.div
+            className="text-center mb-16"
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6 }}
+            viewport={{ once: true }}
+          >
+            <h2 className="text-3xl md:text-4xl font-bold mb-4">
+              Discover Your Path
+            </h2>
+            <p className="text-xl text-muted-foreground max-w-2xl mx-auto mb-8">
+              Helping J&K students choose the right stream, college, and career path through personalized guidance
+            </p>
             
-            <motion.p
-              className="text-lg md:text-xl lg:text-2xl mb-12 opacity-90 max-w-4xl mx-auto"
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.8, delay: 0.2 }}
-            >
-              Helping J&K students choose the right stream, college, and career path through personalized guidance and comprehensive assessments
-            </motion.p>
-
             {/* CTA Buttons */}
-            <motion.div
-              className="flex flex-col sm:flex-row gap-4 justify-center mb-16"
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.8, delay: 0.4 }}
-            >
+            <div className="flex flex-col sm:flex-row gap-4 justify-center mb-12">
               <Button
                 size="lg"
                 asChild
-                className="glassmorphism rounded-full text-lg px-8 py-6 text-white hover:bg-white/20 transition-all duration-300 group"
+                className="rounded-full text-lg px-8 py-6 group"
               >
                 <Link to="/quiz" className="flex items-center space-x-2">
                   <span>Start Your Journey</span>
@@ -112,18 +103,18 @@ const Home: React.FC = () => {
                 size="lg"
                 variant="outline"
                 asChild
-                className="rounded-full text-lg px-8 py-6 border-white/30 text-white hover:bg-white/10 transition-all duration-300"
+                className="rounded-full text-lg px-8 py-6"
               >
                 <Link to="/dashboard">Explore Features</Link>
               </Button>
-            </motion.div>
-          </div>
+            </div>
+          </motion.div>
 
-          {/* Hero Carousel */}
           <motion.div
             initial={{ opacity: 0, y: 50 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, delay: 0.6 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8, delay: 0.2 }}
+            viewport={{ once: true }}
           >
             <HeroCarousel />
           </motion.div>
