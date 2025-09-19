@@ -254,17 +254,21 @@ export function QuizProvider({ children }: { children: ReactNode }) {
         const studentNameAnswer = state.answers.find(a => a.questionId === 6);
         const studentName = studentNameAnswer?.value || 'Anonymous Student';
 
-        await supabase
+        const { error: insertError } = await supabase
           .from('quiz_sessions')
-          .insert({
+          .insert([{
             student_name: studentName,
             location: userProfile.location,
             district: userProfile.district,
             stream: result.stream,
             score: result.score,
-            quiz_answers: state.answers,
-            user_profile: userProfile
-          });
+            quiz_answers: state.answers as any,
+            user_profile: userProfile as any
+          }]);
+        
+        if (insertError) {
+          console.error('Error inserting quiz session:', insertError);
+        }
       } catch (error) {
         console.error('Error saving quiz session:', error);
       }
