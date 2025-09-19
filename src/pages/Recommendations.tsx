@@ -95,11 +95,22 @@ const Recommendations: React.FC = () => {
             </div>
             <CardTitle className="text-2xl md:text-3xl">Recommended Stream: {result.stream}</CardTitle>
             <p className="text-muted-foreground">Assessment Score: {result.score}/100</p>
+            <p className="text-sm text-muted-foreground mt-2">
+              📍 Showing colleges near {result.userProfile.district}, J&K
+            </p>
           </CardHeader>
           <CardContent className="text-center">
             <Badge variant="secondary" className="text-lg px-4 py-2">
               {result.stream} Stream
             </Badge>
+            <div className="mt-4 text-sm text-muted-foreground">
+              <p><strong>Future Goal:</strong> {
+                result.userProfile.futureGoals === 'higher_studies' ? 'Higher Studies' :
+                result.userProfile.futureGoals === 'government_jobs' ? 'Government Jobs' :
+                result.userProfile.futureGoals === 'private_sector' ? 'Private Sector' :
+                'Skill-based Career'
+              }</p>
+            </div>
           </CardContent>
         </Card>
 
@@ -174,7 +185,7 @@ const Recommendations: React.FC = () => {
             </h2>
             
             <div className="space-y-4">
-              {result.colleges.slice(0, 5).map((college) => (
+              {result.colleges.slice(0, 8).map((college) => (
                 <Card key={college.id} className="card-gradient shadow-soft hover:shadow-medium transition-smooth border-0">
                   <CardContent className="p-6">
                     <div className="flex justify-between items-start mb-4">
@@ -182,10 +193,10 @@ const Recommendations: React.FC = () => {
                         <h3 className="font-semibold text-lg mb-2">{college.name}</h3>
                         <div className="flex items-center space-x-2 text-sm text-muted-foreground mb-2">
                           <MapPin className="h-4 w-4" />
-                          <span>{college.location}, {college.state}</span>
+                          <span>{college.location}, {college.district}</span>
                         </div>
                         <Badge variant={college.type === 'Government' ? 'default' : 'secondary'}>
-                          {college.type}
+                          {college.type} • J&K
                         </Badge>
                       </div>
                       <div className="flex space-x-2">
@@ -206,7 +217,7 @@ const Recommendations: React.FC = () => {
                       <div>
                         <p className="text-sm font-medium mb-1">Available Courses:</p>
                         <div className="flex flex-wrap gap-1">
-                          {college.courses.slice(0, 3).map((course) => (
+                          {college.courses.slice(0, 4).map((course) => (
                             <Badge key={course} variant="outline" className="text-xs">
                               {course}
                             </Badge>

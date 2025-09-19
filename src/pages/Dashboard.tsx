@@ -25,7 +25,7 @@ import {
   PieChart as PieChartIcon,
   Calendar
 } from 'lucide-react';
-import { mockStudentData } from '../data/quizData';
+import { mockStudentData } from '../data/jkData';
 import { DashboardStats } from '../types';
 
 const Dashboard: React.FC = () => {
@@ -73,10 +73,11 @@ const Dashboard: React.FC = () => {
   }, [streamFilter, districtFilter]);
 
   // Chart colors
-  const COLORS = {
+  const COLORS: Record<string, string> = {
     Science: 'hsl(195, 85%, 45%)',
     Commerce: 'hsl(35, 85%, 55%)', 
-    Arts: 'hsl(145, 65%, 45%)'
+    Arts: 'hsl(145, 65%, 45%)',
+    Vocational: 'hsl(270, 65%, 55%)'
   };
 
   // Get unique districts and streams for filters
@@ -220,7 +221,7 @@ const Dashboard: React.FC = () => {
                       label={({stream, percentage}) => `${stream} (${percentage}%)`}
                     >
                       {dashboardStats.streamDistribution.map((entry) => (
-                        <Cell key={entry.stream} fill={COLORS[entry.stream]} />
+                        <Cell key={entry.stream} fill={COLORS[entry.stream] || 'hsl(var(--muted))'} />
                       ))}
                     </Pie>
                     <Tooltip formatter={(value, name) => [value, 'Students']} />
@@ -233,7 +234,7 @@ const Dashboard: React.FC = () => {
                   <div key={item.stream} className="flex items-center space-x-2">
                     <div 
                       className="w-3 h-3 rounded-full" 
-                      style={{ backgroundColor: COLORS[item.stream] }}
+                      style={{ backgroundColor: COLORS[item.stream] || 'hsl(var(--muted))' }}
                     />
                     <span className="text-sm">{item.stream}: {item.count}</span>
                   </div>
@@ -339,8 +340,8 @@ const Dashboard: React.FC = () => {
                         <Badge 
                           variant="outline" 
                           style={{ 
-                            borderColor: COLORS[student.stream], 
-                            color: COLORS[student.stream] 
+                            borderColor: COLORS[student.stream] || 'hsl(var(--muted))', 
+                            color: COLORS[student.stream] || 'hsl(var(--muted-foreground))' 
                           }}
                         >
                           {student.stream}

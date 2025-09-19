@@ -1,21 +1,32 @@
 export interface QuizQuestion {
   id: number;
   question: string;
-  options: string[];
-  category: 'interest' | 'skill' | 'learning';
+  options?: string[];
+  category: 'interest' | 'skill' | 'learning' | 'profile';
   weight: number;
+  type: 'multiple_choice' | 'dropdown' | 'input';
+  inputType?: 'text' | 'select';
 }
 
 export interface QuizAnswer {
   questionId: number;
   selectedOption: number;
+  value?: string; // For text inputs like location
+}
+
+export interface UserProfile {
+  stream: 'Science' | 'Commerce' | 'Arts' | 'Vocational';
+  location: string;
+  district: string;
+  futureGoals: 'higher_studies' | 'government_jobs' | 'private_sector' | 'skill_based';
 }
 
 export interface QuizResult {
-  stream: 'Science' | 'Commerce' | 'Arts';
+  stream: 'Science' | 'Commerce' | 'Arts' | 'Vocational';
   score: number;
   recommendations: CourseRecommendation[];
   colleges: College[];
+  userProfile: UserProfile;
 }
 
 export interface CourseRecommendation {

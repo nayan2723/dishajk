@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useReducer, ReactNode } from 'react';
-import { QuizAnswer, QuizResult } from '../types';
+import { QuizAnswer, QuizResult, UserProfile } from '../types';
 import { quizQuestions, courseRecommendations, colleges } from '../data/quizData';
+import { jkColleges, vocationalCourses } from '../data/jkData';
 
 interface QuizState {
   currentQuestion: number;
@@ -75,6 +76,15 @@ export function QuizProvider({ children }: { children: ReactNode }) {
     let scienceScore = 0;
     let commerceScore = 0;
     let artsScore = 0;
+    let vocationalScore = 0;
+
+    // Extract user profile from answers
+    let userProfile: UserProfile = {
+      stream: 'Science',
+      location: '',
+      district: '',
+      futureGoals: 'higher_studies'
+    };
 
     state.answers.forEach(answer => {
       const question = quizQuestions.find(q => q.id === answer.questionId);
@@ -82,7 +92,30 @@ export function QuizProvider({ children }: { children: ReactNode }) {
 
       const weight = question.weight;
       
-      // Score based on answer patterns
+      // Handle profile questions separately
+      if (question.category === 'profile') {
+        switch (question.id) {
+          case 9: // Stream preference
+            if (answer.selectedOption === 0) userProfile.stream = 'Science';
+            else if (answer.selectedOption === 1) userProfile.stream = 'Commerce'; 
+            else if (answer.selectedOption === 2) userProfile.stream = 'Arts';
+            else if (answer.selectedOption === 3) userProfile.stream = 'Vocational';
+            break;
+          case 10: // District
+            userProfile.district = answer.value || '';
+            userProfile.location = answer.value || '';
+            break;
+          case 11: // Future goals
+            if (answer.selectedOption === 0) userProfile.futureGoals = 'higher_studies';
+            else if (answer.selectedOption === 1) userProfile.futureGoals = 'government_jobs';
+            else if (answer.selectedOption === 2) userProfile.futureGoals = 'private_sector';
+            else if (answer.selectedOption === 3) userProfile.futureGoals = 'skill_based';
+            break;
+        }
+        return;
+      }
+      
+      // Score based on answer patterns for other questions
       switch (answer.selectedOption) {
         case 0: // Usually science-oriented
           scienceScore += 10 * weight;
@@ -93,43 +126,91 @@ export function QuizProvider({ children }: { children: ReactNode }) {
         case 2: // Usually arts-oriented
           artsScore += 10 * weight;
           break;
-        case 3: // Mixed or alternate science
-          scienceScore += 5 * weight;
-          artsScore += 3 * weight;
+        case 3: // Mixed or vocational
+          vocationalScore += 8 * weight;
+          scienceScore += 3 * weight;
           break;
       }
     });
 
-    let stream: 'Science' | 'Commerce' | 'Arts';
+    let stream: 'Science' | 'Commerce' | 'Arts' | 'Vocational';
     let score: number;
 
-    if (scienceScore >= commerceScore && scienceScore >= artsScore) {
+    // Use explicit stream preference if provided, otherwise use calculated scores
+    if (userProfile.stream !== 'Science' || scienceScore === 0) {
+      stream = userProfile.stream;
+      score = Math.max(scienceScore, commerceScore, artsScore, vocationalScore);
+    } else if (scienceScore >= commerceScore && scienceScore >= artsScore && scienceScore >= vocationalScore) {
       stream = 'Science';
       score = scienceScore;
-    } else if (commerceScore >= artsScore) {
+    } else if (commerceScore >= artsScore && commerceScore >= vocationalScore) {
       stream = 'Commerce'; 
       score = commerceScore;
+    } else if (vocationalScore >= artsScore) {
+      stream = 'Vocational';
+      score = vocationalScore;
     } else {
       stream = 'Arts';
       score = artsScore;
     }
 
-    // Get recommendations and colleges for the determined stream
-    const recommendations = courseRecommendations[stream] || [];
-    const relevantColleges = colleges.filter(college => 
+    // Get recommendations
+    let recommendations = courseRecommendations[stream] || [];
+    if (stream === 'Vocational') {
+      recommendations = vocationalCourses;
+    }
+
+    // Filter colleges by district and courses
+    let relevantColleges = [...jkColleges];
+    
+    // Filter by district if specified
+    if (userProfile.district) {
+      const nearbyDistricts = getNearbyDistricts(userProfile.district);
+      relevantColleges = relevantColleges.filter(college => 
+        nearbyDistricts.includes(college.district)
+      );
+    }
+    
+    // Filter by stream-relevant courses
+    relevantColleges = relevantColleges.filter(college => 
       college.courses.some(course => 
-        recommendations.some(rec => rec.name === course)
+        recommendations.some(rec => 
+          course.toLowerCase().includes(rec.name.toLowerCase().split(' ')[0].toLowerCase()) ||
+          rec.name.toLowerCase().includes(course.toLowerCase().split(' ')[0])
+        )
       )
     );
+
+    // If no relevant colleges found, show all J&K colleges
+    if (relevantColleges.length === 0) {
+      relevantColleges = jkColleges;
+    }
 
     const result: QuizResult = {
       stream,
       score: Math.round(score),
       recommendations,
-      colleges: relevantColleges,
+      colleges: relevantColleges.slice(0, 8), // Limit to 8 colleges
+      userProfile: { ...userProfile, stream }
     };
 
     return result;
+  };
+
+  // Helper function to get nearby districts
+  const getNearbyDistricts = (district: string): string[] => {
+    const districtGroups = {
+      'Srinagar': ['Srinagar', 'Budgam', 'Ganderbal', 'Pulwama'],
+      'Jammu': ['Jammu', 'Samba', 'Kathua', 'Udhampur'],
+      'Baramulla': ['Baramulla', 'Kupwara', 'Bandipora'],
+      'Anantnag': ['Anantnag', 'Kulgam', 'Shopian', 'Pulwama'],
+      'Budgam': ['Budgam', 'Srinagar', 'Ganderbal'],
+      'Pulwama': ['Pulwama', 'Srinagar', 'Anantnag', 'Kulgam'],
+      'Kathua': ['Kathua', 'Jammu', 'Samba', 'Udhampur'],
+      'Udhampur': ['Udhampur', 'Jammu', 'Doda', 'Kathua']
+    };
+    
+    return districtGroups[district] || [district];
   };
 
   return (

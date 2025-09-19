@@ -1,101 +1,144 @@
-import { QuizQuestion, CourseRecommendation, College, StudentData } from '../types';
+import { QuizQuestion, CourseRecommendation, College } from '../types';
+import { jkDistricts } from './jkData';
 
 export const quizQuestions: QuizQuestion[] = [
   {
     id: 1,
-    question: "What type of activities do you enjoy most?",
+    question: "What type of subjects interest you the most?",
     options: [
-      "Solving mathematical problems and puzzles",
-      "Reading about business and economics", 
-      "Creating art or writing stories",
-      "Analyzing data and conducting experiments"
+      "Physics, Chemistry, Mathematics, Biology",
+      "Business Studies, Economics, Accountancy", 
+      "History, Literature, Psychology, Sociology",
+      "Computer Science, Technology, Innovation"
     ],
     category: 'interest',
-    weight: 1.2
+    weight: 1.5,
+    type: 'multiple_choice'
   },
   {
     id: 2,
-    question: "Which subject do you find most engaging?",
+    question: "Which activity do you enjoy most in your free time?",
     options: [
-      "Physics and Mathematics",
-      "Economics and Accounting",
-      "Literature and History", 
-      "Biology and Chemistry"
+      "Solving puzzles, experiments, reading science magazines",
+      "Managing money, planning events, following market trends",
+      "Reading books, writing, painting, music",
+      "Learning new skills, hands-on work, creating things"
     ],
     category: 'interest',
-    weight: 1.5
+    weight: 1.2,
+    type: 'multiple_choice'
   },
   {
     id: 3,
-    question: "What describes your learning style best?",
+    question: "How do you prefer to learn new concepts?",
     options: [
-      "Learning through experiments and practical work",
-      "Understanding through case studies and real examples",
-      "Learning through discussion and creative expression",
-      "Memorizing facts and following step-by-step processes"
+      "Through experiments and practical demonstrations",
+      "Through case studies and real-world examples",
+      "Through discussions, stories, and creative expression",
+      "Through hands-on practice and skill development"
     ],
     category: 'learning',
-    weight: 1.0
+    weight: 1.0,
+    type: 'multiple_choice'
   },
   {
     id: 4,
-    question: "Which career appeals to you most?",
+    question: "What kind of career environment appeals to you?",
     options: [
-      "Engineer or Doctor",
-      "Business Manager or Entrepreneur", 
-      "Teacher or Social Worker",
-      "Artist or Writer"
+      "Research labs, hospitals, engineering firms",
+      "Corporate offices, banks, business organizations",
+      "Museums, media houses, NGOs, cultural centers",
+      "Workshops, studios, field work, practical settings"
     ],
     category: 'interest',
-    weight: 1.3
+    weight: 1.3,
+    type: 'multiple_choice'
   },
   {
     id: 5,
-    question: "What are your strongest skills?",
+    question: "Which of these skills do you feel strongest in?",
     options: [
-      "Logical thinking and problem-solving",
-      "Communication and leadership",
-      "Creativity and imagination", 
-      "Analysis and attention to detail"
+      "Logical reasoning, analytical thinking, problem-solving",
+      "Communication, leadership, numerical ability",
+      "Creativity, empathy, language skills",
+      "Practical skills, adaptability, quick learning"
     ],
     category: 'skill',
-    weight: 1.1
+    weight: 1.4,
+    type: 'multiple_choice'
   },
   {
     id: 6,
-    question: "Which environment do you thrive in?",
+    question: "What motivates you to study harder?",
     options: [
-      "Laboratory or technical workspace",
-      "Office or business environment",
-      "Classroom or community center",
-      "Studio or creative space"
+      "Understanding how things work, discovering new facts",
+      "Achieving financial success and career growth",
+      "Making a positive impact on society and culture", 
+      "Developing practical skills for immediate use"
     ],
     category: 'learning',
-    weight: 1.0
+    weight: 1.1,
+    type: 'multiple_choice'
   },
   {
     id: 7,
-    question: "What motivates you most?",
+    question: "Which type of projects excite you most?",
     options: [
-      "Discovering how things work",
-      "Building successful ventures",
-      "Helping others and making a difference",
-      "Expressing yourself creatively"
+      "Science fair projects, research work, technical innovations",
+      "Business plans, marketing campaigns, financial analysis",
+      "Art exhibitions, social awareness campaigns, creative writing",
+      "Skill-based workshops, practical demonstrations, DIY projects"
     ],
     category: 'interest',
-    weight: 1.2
+    weight: 1.2,
+    type: 'multiple_choice'
   },
   {
     id: 8,
-    question: "Which activity would you choose for a project?",
+    question: "How do you handle complex problems?",
     options: [
-      "Building a robot or conducting research",
-      "Creating a business plan",
-      "Organizing a community event", 
-      "Making a documentary or artwork"
+      "Break them down systematically and find logical solutions",
+      "Look for practical approaches and cost-effective solutions",
+      "Consider multiple perspectives and creative alternatives",
+      "Focus on immediate, practical solutions that work"
     ],
     category: 'skill',
-    weight: 1.1
+    weight: 1.0,
+    type: 'multiple_choice'
+  },
+  {
+    id: 9,
+    question: "Which stream are you most interested in?",
+    options: [
+      "Science (PCM/PCB)",
+      "Commerce (Business/Economics)",
+      "Arts/Humanities",
+      "Vocational/Skill-based courses"
+    ],
+    category: 'profile',
+    weight: 2.0,
+    type: 'multiple_choice'
+  },
+  {
+    id: 10,
+    question: "Which district are you from in Jammu & Kashmir?",
+    options: jkDistricts,
+    category: 'profile',
+    weight: 0.5,
+    type: 'dropdown'
+  },
+  {
+    id: 11,
+    question: "What are your future career goals?",
+    options: [
+      "Pursue higher studies (Engineering, Medical, etc.)",
+      "Government jobs (Civil Services, Banking, Teaching)",
+      "Private sector jobs (Corporate, IT, Business)",
+      "Skill-based careers (Entrepreneurship, Crafts, Tourism)"
+    ],
+    category: 'profile',
+    weight: 1.5,
+    type: 'multiple_choice'
   }
 ];
 
@@ -103,161 +146,83 @@ export const courseRecommendations: Record<string, CourseRecommendation[]> = {
   Science: [
     {
       id: 1,
-      name: "Computer Science Engineering",
-      description: "Study of computational systems, programming, and software development",
-      rationale: "Perfect match for your logical thinking and problem-solving abilities",
+      name: "B.Tech/Engineering",
+      description: "Four-year technical degree in various engineering disciplines",
+      rationale: "Your analytical thinking and problem-solving skills make you ideal for engineering",
       duration: "4 years",
-      scope: "Software development, AI/ML, cybersecurity, research"
+      scope: "Software companies, government jobs, higher studies, entrepreneurship"
     },
     {
-      id: 2, 
-      name: "Medicine (MBBS)",
-      description: "Comprehensive medical education for healthcare professionals",
-      rationale: "Ideal for your analytical skills and desire to help others",
+      id: 2,
+      name: "MBBS/Medical",
+      description: "Medical degree for aspiring doctors and healthcare professionals",
+      rationale: "Your scientific aptitude and interest in helping others suit medical field",
       duration: "5.5 years",
-      scope: "Clinical practice, surgery, research, public health"
+      scope: "Hospitals, private practice, government health services, research"
     },
     {
       id: 3,
-      name: "Biotechnology", 
-      description: "Application of biological processes for technological advancement",
-      rationale: "Combines your interest in science with practical applications",
-      duration: "4 years",
-      scope: "Pharmaceutical, agriculture, environmental solutions"
+      name: "B.Sc (Physics/Chemistry/Biology)",
+      description: "Bachelor's degree in pure sciences with research opportunities",
+      rationale: "Perfect for deep scientific understanding and research career",
+      duration: "3 years",
+      scope: "Research, teaching, higher studies, scientific organizations"
     }
   ],
   Commerce: [
     {
-      id: 4,
-      name: "Business Administration (BBA)",
-      description: "Comprehensive business management and entrepreneurship program",
-      rationale: "Matches your leadership skills and business acumen",
+      id: 10,
+      name: "B.Com/BBA",
+      description: "Business and commerce degree with practical business knowledge",
+      rationale: "Your interest in business and numerical skills make this ideal",
       duration: "3 years", 
-      scope: "Management, consulting, entrepreneurship, finance"
+      scope: "Banking, finance, business management, government jobs"
     },
     {
-      id: 5,
-      name: "Chartered Accountancy (CA)",
-      description: "Professional accounting and financial management qualification",
-      rationale: "Perfect for your analytical and detail-oriented approach",
-      duration: "3-5 years",
-      scope: "Auditing, taxation, financial consulting, corporate finance"
+      id: 11,
+      name: "CA/CS/CMA",
+      description: "Professional courses in accounting, company secretarial, or cost management",
+      rationale: "High-demand professional courses with excellent career prospects",
+      duration: "3-4 years",
+      scope: "Accounting firms, corporate sector, self-practice, consultancy"
     },
     {
-      id: 6,
-      name: "Economics Honours", 
-      description: "Advanced study of economic principles and market dynamics",
-      rationale: "Ideal for understanding business and policy decisions",
+      id: 12,
+      name: "BCA/IT",
+      description: "Computer applications and IT-focused business degree",
+      rationale: "Combines your business acumen with growing IT sector opportunities",
       duration: "3 years",
-      scope: "Policy analysis, banking, research, consulting"
+      scope: "IT companies, software development, digital marketing, e-commerce"
     }
   ],
   Arts: [
     {
-      id: 7,
-      name: "Psychology",
-      description: "Study of human behavior and mental processes", 
-      rationale: "Perfect for your empathy and desire to understand people",
+      id: 20,
+      name: "B.A (English/History/Psychology)",
+      description: "Liberal arts education with focus on humanities and social sciences",
+      rationale: "Your creative thinking and communication skills are perfect for humanities",
       duration: "3 years",
-      scope: "Counseling, research, HR, social work"
+      scope: "Civil services, journalism, teaching, social work, research"
     },
     {
-      id: 8,
-      name: "Mass Communication",
-      description: "Media, journalism, and communication studies",
-      rationale: "Great fit for your communication and creative skills",
-      duration: "3 years", 
-      scope: "Journalism, advertising, PR, digital media"
+      id: 21,
+      name: "Mass Communication/Journalism",
+      description: "Media and communication studies for journalism and media careers",
+      rationale: "Your language skills and social awareness make you suited for media",
+      duration: "3 years",
+      scope: "Newspapers, TV channels, digital media, public relations, advertising"
     },
     {
-      id: 9,
-      name: "Social Work",
-      description: "Community development and social welfare programs",
-      rationale: "Matches your passion for helping others and social change", 
+      id: 22,
+      name: "Social Work/NGO Management",
+      description: "Focus on social development and community service",
+      rationale: "Your empathy and desire to help society align with social work",
       duration: "3 years",
-      scope: "NGOs, government programs, community development"
+      scope: "NGOs, government social schemes, community development, counseling"
     }
   ]
 };
 
 export const colleges: College[] = [
-  {
-    id: 1,
-    name: "Indian Institute of Technology (IIT) Delhi",
-    location: "Delhi", 
-    district: "New Delhi",
-    state: "Delhi",
-    type: "Government",
-    courses: ["Computer Science Engineering", "Mechanical Engineering", "Electrical Engineering"],
-    website: "https://www.iitd.ac.in/",
-    contact: "admissions@iitd.ac.in"
-  },
-  {
-    id: 2,
-    name: "All India Institute of Medical Sciences (AIIMS)",
-    location: "Delhi",
-    district: "New Delhi", 
-    state: "Delhi",
-    type: "Government",
-    courses: ["Medicine (MBBS)", "Nursing", "Biotechnology"],
-    website: "https://www.aiims.edu/",
-    contact: "info@aiims.edu"
-  },
-  {
-    id: 3,
-    name: "Shri Ram College of Commerce (SRCC)",
-    location: "Delhi",
-    district: "New Delhi",
-    state: "Delhi", 
-    type: "Government",
-    courses: ["Business Administration (BBA)", "Economics Honours", "Commerce"],
-    website: "https://www.srcc.du.ac.in/",
-    contact: "principal@srcc.du.ac.in"
-  },
-  {
-    id: 4,
-    name: "Lady Shri Ram College",
-    location: "Delhi",
-    district: "New Delhi",
-    state: "Delhi",
-    type: "Government", 
-    courses: ["Psychology", "Mass Communication", "Social Work"],
-    website: "https://www.lsr.edu.in/",
-    contact: "admission@lsr.edu.in"
-  },
-  {
-    id: 5,
-    name: "Jawaharlal Nehru University (JNU)",
-    location: "Delhi",
-    district: "New Delhi",
-    state: "Delhi",
-    type: "Government",
-    courses: ["Psychology", "Social Work", "Economics Honours"],
-    website: "https://www.jnu.ac.in/",
-    contact: "registrar@jnu.ac.in"
-  },
-  {
-    id: 6,
-    name: "Delhi Technological University (DTU)",
-    location: "Delhi", 
-    district: "New Delhi",
-    state: "Delhi",
-    type: "Government",
-    courses: ["Computer Science Engineering", "Biotechnology", "Engineering"],
-    website: "https://www.dtu.ac.in/",
-    contact: "info@dtu.ac.in"
-  }
-];
-
-export const mockStudentData: StudentData[] = [
-  { id: 1, name: "Raj Sharma", stream: "Science", district: "Mumbai", score: 85, completedAt: "2024-01-15" },
-  { id: 2, name: "Priya Patel", stream: "Commerce", district: "Ahmedabad", score: 78, completedAt: "2024-01-16" },
-  { id: 3, name: "Amit Kumar", stream: "Arts", district: "Delhi", score: 72, completedAt: "2024-01-17" },
-  { id: 4, name: "Sneha Gupta", stream: "Science", district: "Pune", score: 88, completedAt: "2024-01-18" },
-  { id: 5, name: "Rohit Singh", stream: "Commerce", district: "Bangalore", score: 80, completedAt: "2024-01-19" },
-  { id: 6, name: "Kavya Reddy", stream: "Science", district: "Hyderabad", score: 92, completedAt: "2024-01-20" },
-  { id: 7, name: "Arjun Mehta", stream: "Arts", district: "Chennai", score: 75, completedAt: "2024-01-21" },
-  { id: 8, name: "Ananya Das", stream: "Commerce", district: "Kolkata", score: 83, completedAt: "2024-01-22" },
-  { id: 9, name: "Vikram Joshi", stream: "Science", district: "Jaipur", score: 87, completedAt: "2024-01-23" },
-  { id: 10, name: "Isha Agarwal", stream: "Arts", district: "Lucknow", score: 79, completedAt: "2024-01-24" }
+  // This will be replaced by jkColleges in the context
 ];
