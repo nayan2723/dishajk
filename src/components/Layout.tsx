@@ -21,7 +21,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
   return (
     <div className="min-h-screen bg-background">
       {/* Header */}
-      <header className={`sticky top-0 z-0 w-full transition-all duration-300 ${
+      <header className={`sticky top-0 z-[1] w-full transition-all duration-300 ${
         location.pathname === '/' 
           ? 'bg-transparent border-transparent' 
           : 'border-b bg-card/80 backdrop-blur-sm shadow-soft'
