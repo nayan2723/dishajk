@@ -21,7 +21,11 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
   return (
     <div className="min-h-screen bg-background">
       {/* Header */}
-      <header className="sticky top-0 z-50 w-full border-b bg-card/80 backdrop-blur-sm shadow-soft">
+      <header className={`sticky top-0 z-50 w-full transition-all duration-300 ${
+        location.pathname === '/' 
+          ? 'bg-transparent border-transparent' 
+          : 'border-b bg-card/80 backdrop-blur-sm shadow-soft'
+      }`}>
         <div className="container mx-auto px-4 py-4">
           <div className="flex items-center justify-between">
             {/* Logo */}
