@@ -32,14 +32,11 @@ const Recommendations: React.FC = () => {
   const [expandedCourse, setExpandedCourse] = useState<number | null>(null);
 
   useEffect(() => {
-    if (!state.isComplete && state.answers.length < 8) {
-      navigate('/quiz');
-      return;
+    if (state.isComplete && state.answers.length >= 8) {
+      const calculatedResult = calculateResult();
+      setResult(calculatedResult);
     }
-
-    const calculatedResult = calculateResult();
-    setResult(calculatedResult);
-  }, [state, calculateResult, navigate]);
+  }, [state, calculateResult]);
 
   const handleDownloadReport = () => {
     if (!result) return;
@@ -82,6 +79,30 @@ const Recommendations: React.FC = () => {
   const toggleCourseExpansion = (courseId: number) => {
     setExpandedCourse(expandedCourse === courseId ? null : courseId);
   };
+
+  // Show message if quiz not completed
+  if (!state.isComplete || state.answers.length < 8) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-background to-muted/30">
+        <Card className="w-full max-w-md card-gradient shadow-medium border-0">
+          <CardContent className="p-8 text-center">
+            <div className="flex justify-center mb-4">
+              <div className="p-4 rounded-full bg-primary/10 text-primary">
+                <BookOpen className="h-8 w-8" />
+              </div>
+            </div>
+            <h2 className="text-2xl font-bold mb-4">Take Quiz First</h2>
+            <p className="text-muted-foreground mb-6">
+              You need to complete the career assessment quiz to see your personalized recommendations.
+            </p>
+            <Button onClick={() => navigate('/quiz')} className="w-full">
+              Take Assessment
+            </Button>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
 
   if (!result) {
     return (
