@@ -14,6 +14,48 @@ export type Database = {
   }
   public: {
     Tables: {
+      colleges: {
+        Row: {
+          area_type: string
+          college_name: string
+          created_at: string
+          district: string
+          fee_range_ug: string | null
+          id: string
+          ownership: string
+          serial_no: number
+          streams_offered: string[]
+          updated_at: string
+          website: string | null
+        }
+        Insert: {
+          area_type: string
+          college_name: string
+          created_at?: string
+          district: string
+          fee_range_ug?: string | null
+          id?: string
+          ownership: string
+          serial_no: number
+          streams_offered: string[]
+          updated_at?: string
+          website?: string | null
+        }
+        Update: {
+          area_type?: string
+          college_name?: string
+          created_at?: string
+          district?: string
+          fee_range_ug?: string | null
+          id?: string
+          ownership?: string
+          serial_no?: number
+          streams_offered?: string[]
+          updated_at?: string
+          website?: string | null
+        }
+        Relationships: []
+      }
       students: {
         Row: {
           created_at: string
