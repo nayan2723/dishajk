@@ -91,13 +91,13 @@ All colors MUST be HSL.
     --secondary-foreground: 220 15% 95%;
 
     --muted: 220 15% 20%;
-    --muted-foreground: 220 10% 65%;
+    --muted-foreground: 220 10% 75%;
 
     --accent: 0 85% 70%;
-    --accent-foreground: 220 25% 8%;
+    --accent-foreground: 0 0% 100%;
 
     --success: 145 65% 55%;
-    --success-foreground: 220 25% 8%;
+    --success-foreground: 0 0% 100%;
 
     --destructive: 0 75% 55%;
     --destructive-foreground: 220 15% 95%;

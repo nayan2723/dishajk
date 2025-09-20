@@ -41,20 +41,33 @@ export const CareerFlowchart: React.FC<CareerFlowchartProps> = ({ quizResult, st
   const flowchartRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
+    const isDark = document.documentElement.classList.contains('dark');
     mermaid.initialize({
-      startOnLoad: true,
-      theme: 'default',
-      themeVariables: {
-        primaryColor: '#3b82f6',
-        primaryTextColor: '#ffffff',
-        primaryBorderColor: '#1e40af',
-        lineColor: '#6b7280',
-        sectionBkgColor: '#f3f4f6',
-        altSectionBkgColor: '#e5e7eb',
-        gridColor: '#d1d5db',
-        secondaryColor: '#10b981',
-        tertiaryColor: '#f59e0b',
-      },
+      startOnLoad: false,
+      theme: isDark ? 'dark' : 'default',
+      themeVariables: isDark
+        ? {
+            primaryColor: '#ef4444',
+            primaryTextColor: '#ffffff',
+            primaryBorderColor: '#f87171',
+            lineColor: '#9ca3af',
+            sectionBkgColor: '#111827',
+            altSectionBkgColor: '#1f2937',
+            gridColor: '#374151',
+            secondaryColor: '#10b981',
+            tertiaryColor: '#f59e0b',
+          }
+        : {
+            primaryColor: '#ef4444',
+            primaryTextColor: '#111827',
+            primaryBorderColor: '#b91c1c',
+            lineColor: '#6b7280',
+            sectionBkgColor: '#ffffff',
+            altSectionBkgColor: '#f3f4f6',
+            gridColor: '#d1d5db',
+            secondaryColor: '#10b981',
+            tertiaryColor: '#f59e0b',
+          },
     });
   }, []);
 
@@ -127,7 +140,12 @@ export const CareerFlowchart: React.FC<CareerFlowchartProps> = ({ quizResult, st
     // Create Mermaid flowchart syntax
     let mermaidSyntax = 'flowchart TD\n';
     
-    // Add nodes
+    // Base nodes
+    mermaidSyntax += `    courses["Stream Courses"]\n`;
+    mermaidSyntax += `    higher_studies["Higher Education Options"]\n`;
+    mermaidSyntax += `    careers["Career Opportunities"]\n`;
+    
+    // Add nodes and links from data
     flowchartData.nodes.forEach(node => {
       if (node.type === 'start') {
         mermaidSyntax += `    ${node.id}["${node.label}"] --> courses\n`;
@@ -152,13 +170,14 @@ export const CareerFlowchart: React.FC<CareerFlowchartProps> = ({ quizResult, st
 
     // Style the nodes
     mermaidSyntax += `
-    classDef startNode fill:#3b82f6,stroke:#1e40af,stroke-width:2px,color:#fff
+    classDef startNode fill:#ef4444,stroke:#b91c1c,stroke-width:2px,color:#fff
     classDef courseNode fill:#10b981,stroke:#059669,stroke-width:2px,color:#fff
-    classDef eduNode fill:#f59e0b,stroke:#d97706,stroke-width:2px,color:#fff
-    classDef careerNode fill:#ef4444,stroke:#dc2626,stroke-width:2px,color:#fff
+    classDef eduNode fill:#f59e0b,stroke:#d97706,stroke-width:2px,color:#111827
+    classDef careerNode fill:#6366f1,stroke:#4f46e5,stroke-width:2px,color:#fff
     
-    class stream startNode
-    class courses,higher_studies courseNode
+    class courses courseNode
+    class higher_studies eduNode
+    class careers careerNode
     `;
 
     try {
@@ -210,11 +229,10 @@ export const CareerFlowchart: React.FC<CareerFlowchartProps> = ({ quizResult, st
             </div>
           )}
           
-          {/* Hidden mermaid container for generating the image */}
+          {/* Off-screen mermaid container used for rendering and PDF capture (must not be display:none) */}
           <div 
-            ref={mermaidRef} 
-            className="hidden"
-            style={{ backgroundColor: '#ffffff', padding: '20px' }}
+            ref={mermaidRef}
+            style={{ position: 'absolute', left: '-10000px', top: 0, backgroundColor: '#ffffff', padding: '20px', width: '1400px' }}
           />
         </CardContent>
       </Card>
