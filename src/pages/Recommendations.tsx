@@ -26,6 +26,9 @@ import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { College } from '../types';
 import { CareerFlowchart } from '@/components/CareerFlowchart';
+import { JobTitles } from '@/components/JobTitles';
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { AlertCircle } from 'lucide-react';
 import { AlertDialog, AlertDialogAction, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
 
 const Recommendations: React.FC = () => {
@@ -38,6 +41,7 @@ const Recommendations: React.FC = () => {
   const [nearbyColleges, setNearbyColleges] = useState<College[]>([]);
   const [showNearbyColleges, setShowNearbyColleges] = useState(false);
   const [loadingNearby, setLoadingNearby] = useState(false);
+  const [showFallbackDialog, setShowFallbackDialog] = useState(false);
   const [courseJobTitles, setCourseJobTitles] = useState<{[key: string]: string[]}>({});
   const [showGovtCollegeAlert, setShowGovtCollegeAlert] = useState(false);
 

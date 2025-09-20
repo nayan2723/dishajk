@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
-import { Loader2 } from 'lucide-react';
+import { Loader2, TrendingUp } from 'lucide-react';
 import { toast } from 'sonner';
 import mermaid from 'mermaid';
 import { supabase } from '@/integrations/supabase/client';
@@ -34,6 +34,7 @@ export const CareerFlowchart: React.FC<CareerFlowchartProps> = ({ quizResult, st
   const [flowchartData, setFlowchartData] = useState<FlowchartData | null>(null);
   const [isGenerating, setIsGenerating] = useState(false);
   const mermaidRef = useRef<HTMLDivElement>(null);
+  const flowchartRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     mermaid.initialize({
@@ -138,65 +139,65 @@ export const CareerFlowchart: React.FC<CareerFlowchartProps> = ({ quizResult, st
     }
   }, [quizResult]);
 
-
   return (
     <div className="w-full">
-      <div className="text-center mb-8">
-        <h2 className="text-2xl font-bold mb-4">Your Career Pathway</h2>
-        <p className="text-muted-foreground">AI-generated career guidance flowchart based on your assessment</p>
-      </div>
+      <h2 className="text-2xl font-bold mb-6 flex items-center">
+        <TrendingUp className="h-6 w-6 mr-2 text-primary" />
+        Your Career Pathway
+      </h2>
       
-      {isGenerating ? (
-        <Card className="w-full">
-          <CardContent className="flex items-center justify-center py-12">
-            <div className="text-center">
+      <Card className="card-gradient shadow-medium border-0">
+        <CardContent className="p-6">
+          {isGenerating ? (
+            <div className="text-center py-12">
               <Loader2 className="mx-auto h-8 w-8 animate-spin text-primary mb-4" />
               <p className="text-muted-foreground">Generating your personalized career flowchart...</p>
             </div>
-          </CardContent>
-        </Card>
-      ) : flowchartData ? (
-        <div className="space-y-6">
-          <div className="text-center mb-6">
-            <h3 className="text-xl font-semibold mb-2">{flowchartData.title}</h3>
-          </div>
-          
-          <Card className="w-full">
-            <CardContent className="p-6">
+          ) : !flowchartData ? (
+            <div className="text-center py-8 text-muted-foreground">
+              <p>Unable to generate flowchart. Please try refreshing the page.</p>
+            </div>
+          ) : (
+            <div ref={flowchartRef} className="space-y-6">
+              <div className="text-center mb-6">
+                <h3 className="text-2xl font-bold mb-2">{flowchartData.title}</h3>
+                <p className="text-muted-foreground">AI-Generated Career Pathway</p>
+              </div>
+              
               <div 
                 ref={mermaidRef} 
-                className="flex justify-center items-center min-h-[400px] bg-white rounded-lg border p-6 overflow-auto"
+                className="flex justify-center items-center min-h-[400px] bg-white rounded-lg border p-6 overflow-x-auto"
                 style={{ backgroundColor: '#ffffff' }}
               />
-            </CardContent>
-          </Card>
-          
-          {/* Detailed breakdown */}
-          <div className="grid gap-4 mt-8">
-            {flowchartData.nodes.map((node) => (
-              node.options && (
-                <div key={node.id} className="space-y-2">
-                  <h4 className="font-semibold text-lg">{node.label}</h4>
-                  <div className="grid gap-2 md:grid-cols-2">
-                    {node.options.map((option, index) => (
-                      <Card key={index} className="p-3">
-                        <h5 className="font-medium">{option.name}</h5>
-                        {option.duration && (
-                          <p className="text-sm text-muted-foreground">Duration: {option.duration}</p>
-                        )}
-                        {option.sector && (
-                          <p className="text-sm text-muted-foreground">Sector: {option.sector}</p>
-                        )}
-                        <p className="text-sm mt-1">{option.description}</p>
-                      </Card>
-                    ))}
-                  </div>
-                </div>
-              )
-            ))}
-          </div>
-        </div>
-      ) : null}
+              
+              {/* Detailed breakdown */}
+              <div className="grid gap-6 mt-8">
+                {flowchartData.nodes.map((node) => (
+                  node.options && (
+                    <div key={node.id} className="space-y-3">
+                      <h4 className="font-semibold text-lg text-primary">{node.label}</h4>
+                      <div className="grid gap-3 md:grid-cols-2 lg:grid-cols-3">
+                        {node.options.map((option, index) => (
+                          <Card key={index} className="p-4 hover:shadow-md transition-all">
+                            <h5 className="font-medium text-foreground mb-2">{option.name}</h5>
+                            {option.duration && (
+                              <p className="text-sm text-muted-foreground mb-1">⏱️ Duration: {option.duration}</p>
+                            )}
+                            {option.sector && (
+                              <p className="text-sm text-muted-foreground mb-2">🏢 Sector: {option.sector}</p>
+                            )}
+                            <p className="text-sm text-muted-foreground">{option.description}</p>
+                          </Card>
+                        ))}
+                      </div>
+                    </div>
+                  )
+                ))}
+              </div>
+            </div>
+          )}
+        </CardContent>
+      </Card>
     </div>
   );
 };
