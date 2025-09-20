@@ -1,73 +1,75 @@
-# Welcome to your Lovable project
+# 🎓 DISHA - Personalized Career & Education Advisor
 
-## Project info
+## 🚀 Project Overview
 
-**URL**: https://lovable.dev/projects/2275e293-ac3a-469a-a687-b61a037078f3
+**DISHA** is a web platform providing personalized career and education guidance for students in Jammu & Kashmir. It helps students choose the right stream after Class 10/12, discover nearby colleges, and explore potential career paths with AI-powered insights.
 
-## How can I edit this code?
+**Key Features:**
+- 📝 Interactive Quiz to assess interests and strengths  
+- 🏫 College recommendations based on Supabase database  
+- 🧠 AI-generated career flowcharts (Stream → Recommended Course → Higher Studies → Job Titles)  
+- 💼 Job title suggestions for each recommended course  
+- 📩 “Get in Touch” form to collect student interest  
+- 🌗 Dark/Light mode support and modern interactive UI  
+- 🔐 Secure access with Clerk authentication  
 
-There are several ways of editing your application.
+---
 
-**Use Lovable**
+## 🛠 Technologies Used
 
-Simply visit the [Lovable Project](https://lovable.dev/projects/2275e293-ac3a-469a-a687-b61a037078f3) and start prompting.
+- **Frontend:** React, TypeScript, Tailwind CSS, shadcn-ui  
+- **Bundler & Build:** Vite  
+- **Authentication:** Clerk  
+- **Backend & Database:** Supabase (PostgreSQL)  
+- **AI Integration:** Google Gemini API  
+- **Flowcharts & Visualization:** React Flow / Mermaid.js  
+- **Animations & UI Enhancements:** Framer Motion  
 
-Changes made via Lovable will be committed automatically to this repo.
+---
 
-**Use your preferred IDE**
+## ✨ Features
 
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
+### 1️⃣ Quiz & Recommendations
+- 5-question quiz: area, ownership preference, stream, marks, and location  
+- Dynamic college recommendations based on Supabase data  
+- Smooth scroll to recommendation section after quiz submission  
 
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
+### 2️⃣ Career Flowchart
+- Auto-generates career flowchart using AI  
+- Downloadable as PDF  
+- Clear white background for optimal readability  
 
-Follow these steps:
+### 3️⃣ College Information
+- College cards: Name, Type, District, Urban/Rural Status, Courses, Links  
+- Job titles for each course displayed below recommended courses  
+- Pop-up if selected government colleges are unavailable, showing private alternatives  
 
-```sh
-# Step 1: Clone the repository using the project's Git URL.
+### 4️⃣ Get in Touch Form
+- Collects Name, Email, Phone, Message  
+- Data stored in `interested_students` table in Supabase  
+- Fully responsive design  
+
+### 5️⃣ Theme & UI Enhancements
+- Dark and Red theme optimized for readability and interactivity  
+- Clean layout with professional spacing and modern animations  
+
+---
+
+## ⚙️ Setup & Development
+
+### Prerequisites
+- Node.js & npm (or Yarn)
+
+### Installation
+```bash
+# Clone the repository
 git clone <YOUR_GIT_URL>
 
-# Step 2: Navigate to the project directory.
+# Navigate into the project folder
 cd <YOUR_PROJECT_NAME>
 
-# Step 3: Install the necessary dependencies.
-npm i
+# Install dependencies
+npm install
 
-# Step 4: Start the development server with auto-reloading and an instant preview.
+# Start development server
 npm run dev
-```
-
-**Edit a file directly in GitHub**
-
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
-
-**Use GitHub Codespaces**
-
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
-
-## What technologies are used for this project?
-
-This project is built with:
-
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
-
-## How can I deploy this project?
-
-Simply open [Lovable](https://lovable.dev/projects/2275e293-ac3a-469a-a687-b61a037078f3) and click on Share -> Publish.
-
-## Can I connect a custom domain to my Lovable project?
-
-Yes, you can!
-
-To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
-
-Read more here: [Setting up a custom domain](https://docs.lovable.dev/features/custom-domain#custom-domain)
