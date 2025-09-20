@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button';
 import { GraduationCap, Home, ClipboardList, Target, BarChart3 } from 'lucide-react';
 import { SignedIn, SignedOut, UserButton } from "@clerk/clerk-react";
 import ThemeToggle from './ThemeToggle';
+import { Chatbot } from './Chatbot';
 
 interface LayoutProps {
   children: React.ReactNode;
@@ -128,6 +129,9 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
           </div>
         </div>
       </footer>
+      
+      {/* Chatbot */}
+      <Chatbot />
     </div>
   );
 };
