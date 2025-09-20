@@ -234,7 +234,7 @@ const Recommendations: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen py-8 px-4 bg-gradient-to-br from-background to-muted/30">
+    <div id="recommendations-section" className="min-h-screen py-8 px-4 bg-gradient-to-br from-background to-muted/30">
       <div className="container mx-auto max-w-6xl">
         {/* Header */}
         <div className="text-center mb-8">

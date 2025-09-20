@@ -5,6 +5,7 @@ import { Loader2, TrendingUp, Download, Sparkles } from 'lucide-react';
 import { toast } from 'sonner';
 import mermaid from 'mermaid';
 import html2canvas from 'html2canvas';
+import jsPDF from 'jspdf';
 import { supabase } from '@/integrations/supabase/client';
 import { QuizResult } from '@/types';
 
@@ -91,11 +92,28 @@ export const CareerFlowchart: React.FC<CareerFlowchartProps> = ({ quizResult, st
         allowTaint: true,
       });
 
-      const link = document.createElement('a');
-      link.download = `${studentName.replace(/\s+/g, '_')}_Career_Flowchart.png`;
-      link.href = canvas.toDataURL();
-      link.click();
+      const pdf = new jsPDF('l', 'mm', 'a4');
+      const imgData = canvas.toDataURL('image/png');
       
+      const pdfWidth = pdf.internal.pageSize.getWidth();
+      const pdfHeight = pdf.internal.pageSize.getHeight();
+      const imgWidth = canvas.width;
+      const imgHeight = canvas.height;
+      const ratio = Math.min(pdfWidth / imgWidth, pdfHeight / imgHeight);
+      const imgX = (pdfWidth - imgWidth * ratio) / 2;
+      const imgY = 30;
+
+      pdf.addImage(imgData, 'PNG', imgX, imgY, imgWidth * ratio, imgHeight * ratio);
+      
+      // Add header
+      pdf.setFontSize(20);
+      pdf.text('Career Pathway Flowchart', pdfWidth / 2, 20, { align: 'center' });
+      
+      // Add student name
+      pdf.setFontSize(14);
+      pdf.text(`Student: ${studentName}`, 20, imgY + imgHeight * ratio + 20);
+      
+      pdf.save(`${studentName.replace(/\s+/g, '_')}_Career_Flowchart.pdf`);
       toast.success('Flowchart downloaded successfully!');
     } catch (error) {
       console.error('Error downloading flowchart:', error);

@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
@@ -6,10 +6,12 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
-import { ClipboardList, Target, BarChart3, Users, Award, TrendingUp, Star, ArrowRight, Mail, MapPin, Phone, Eye, Heart, Lightbulb } from 'lucide-react';
+import { ClipboardList, Target, BarChart3, Users, Award, TrendingUp, Star, ArrowRight, Mail, MapPin, Phone, Eye, Heart, Lightbulb, Loader2 } from 'lucide-react';
 import { useForm } from 'react-hook-form';
+import { toast } from 'sonner';
 import HeroCarousel from '@/components/HeroCarousel';
 import { HeroGeometric } from '@/components/ui/shape-landing-hero';
+import { supabase } from '@/integrations/supabase/client';
 
 const Home: React.FC = () => {
   const features = [
@@ -43,11 +45,30 @@ const Home: React.FC = () => {
   ];
 
   const { register, handleSubmit, formState: { errors }, reset } = useForm();
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const onSubmit = (data: any) => {
-    console.log('Form submitted:', data);
-    // Handle form submission here
-    reset();
+  const onSubmit = async (data: any) => {
+    setIsSubmitting(true);
+    try {
+      const { error } = await supabase
+        .from('interested_students')
+        .insert([{
+          name: data.name,
+          email: data.email,
+          phone: data.phone || null,
+          message: data.message
+        }]);
+
+      if (error) throw error;
+
+      toast.success('Thank you for your interest! We will get back to you soon.');
+      reset();
+    } catch (error) {
+      console.error('Error submitting form:', error);
+      toast.error('Failed to submit form. Please try again.');
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const aboutCards = [
@@ -426,14 +447,14 @@ const Home: React.FC = () => {
                   transition={{ duration: 0.6, delay: 0.3 }}
                   viewport={{ once: true }}
                 >
-                  <Label htmlFor="message" className="mb-2 block">Message</Label>
-                  <Textarea
-                    id="message"
-                    {...register('message', { required: 'Message is required' })}
-                    className="transition-smooth focus:ring-2 focus:ring-primary min-h-[120px]"
-                    placeholder="Tell us how we can help you..."
+                  <Label htmlFor="phone" className="mb-2 block">Phone (Optional)</Label>
+                  <Input
+                    id="phone"
+                    type="tel"
+                    {...register('phone')}
+                    className="transition-smooth focus:ring-2 focus:ring-primary"
+                    placeholder="Your phone number"
                   />
-                  {errors.message && <p className="text-destructive text-sm mt-1">{errors.message.message as string}</p>}
                 </motion.div>
 
                 <motion.div
@@ -441,15 +462,40 @@ const Home: React.FC = () => {
                   whileInView={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.6, delay: 0.4 }}
                   viewport={{ once: true }}
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
                 >
-                  <Button
-                    type="submit"
-                    size="lg"
-                    className="w-full rounded-full font-semibold py-4 shadow-medium transition-smooth"
+                  <Label htmlFor="message" className="mb-2 block">Message</Label>
+                  <Textarea
+                    id="message"
+                    {...register('message', { required: 'Message is required' })}
+                    className="transition-smooth focus:ring-2 focus:ring-primary min-h-[120px]"
+                    placeholder="Tell us about your interests and goals..."
+                  />
+                  {errors.message && <p className="text-destructive text-sm mt-1">{errors.message.message as string}</p>}
+                </motion.div>
+
+                <motion.div
+                  initial={{ opacity: 0, y: 20 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.6, delay: 0.5 }}
+                  viewport={{ once: true }}
+                >
+                  <Button 
+                    type="submit" 
+                    size="lg" 
+                    className="w-full shadow-medium transition-bounce hover:scale-105"
+                    disabled={isSubmitting}
                   >
-                    Send Message
+                    {isSubmitting ? (
+                      <>
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                        Sending...
+                      </>
+                    ) : (
+                      <>
+                        <Mail className="mr-2 h-4 w-4" />
+                        Send Message
+                      </>
+                    )}
                   </Button>
                 </motion.div>
               </form>
@@ -514,29 +560,6 @@ const Home: React.FC = () => {
                   </motion.div>
                 </div>
               </div>
-
-              {/* Social Media */}
-              <motion.div
-                className="card-gradient border border-border/50 p-6 rounded-2xl shadow-soft"
-                initial={{ opacity: 0, y: 30 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.6, delay: 0.5 }}
-                viewport={{ once: true }}
-              >
-                <h4 className="text-lg font-semibold mb-4">Follow Us</h4>
-                <div className="flex space-x-4">
-                  {['📘', '🐦', '💼', '📷'].map((icon, index) => (
-                    <motion.button
-                      key={index}
-                      className="w-12 h-12 bg-muted hover:bg-muted/80 rounded-full flex items-center justify-center transition-smooth"
-                      whileHover={{ scale: 1.1, y: -2 }}
-                      whileTap={{ scale: 0.95 }}
-                    >
-                      {icon}
-                    </motion.button>
-                  ))}
-                </div>
-              </motion.div>
             </motion.div>
           </div>
         </div>

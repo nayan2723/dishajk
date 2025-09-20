@@ -287,6 +287,23 @@ export function QuizProvider({ children }: { children: ReactNode }) {
     }
   };
 
+  // Auto-scroll to recommendations after quiz completion
+  const scrollToRecommendations = () => {
+    setTimeout(() => {
+      const recommendationsSection = document.getElementById('recommendations-section');
+      if (recommendationsSection) {
+        const headerHeight = 80; // Adjust based on your header height
+        const elementPosition = recommendationsSection.getBoundingClientRect().top;
+        const offsetPosition = elementPosition + window.scrollY - headerHeight;
+        
+        window.scrollTo({
+          top: offsetPosition,
+          behavior: 'smooth'
+        });
+      }
+    }, 500);
+  };
+
   // Helper function to get nearby districts
   const getNearbyDistricts = (district: string): string[] => {
     const districtGroups = {
@@ -304,7 +321,11 @@ export function QuizProvider({ children }: { children: ReactNode }) {
   };
 
   return (
-    <QuizContext.Provider value={{ state, dispatch, calculateResult }}>
+    <QuizContext.Provider value={{ state, dispatch, calculateResult: async () => {
+      const result = await calculateResult();
+      scrollToRecommendations();
+      return result;
+    } }}>
       {children}
     </QuizContext.Provider>
   );
