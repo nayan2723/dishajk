@@ -14,6 +14,33 @@ export type Database = {
   }
   public: {
     Tables: {
+      career_paths: {
+        Row: {
+          course_name: string
+          created_at: string
+          id: string
+          job_titles: string[]
+          stream: string
+          updated_at: string
+        }
+        Insert: {
+          course_name: string
+          created_at?: string
+          id?: string
+          job_titles: string[]
+          stream: string
+          updated_at?: string
+        }
+        Update: {
+          course_name?: string
+          created_at?: string
+          id?: string
+          job_titles?: string[]
+          stream?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       colleges: {
         Row: {
           "College Name": string | null

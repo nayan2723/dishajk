@@ -17,15 +17,16 @@ import {
   BookOpen,
   Building,
   FileText,
-  Search
+  Search,
+  Briefcase
 } from 'lucide-react';
 import { useQuiz } from '../context/QuizContext';
 import { generatePDFReport } from '../utils/pdfGenerator';
-import { generateFlowchartPDF } from '../utils/flowchartGenerator';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { College } from '../types';
 import { CareerFlowchart } from '@/components/CareerFlowchart';
+import { AlertDialog, AlertDialogAction, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
 
 const Recommendations: React.FC = () => {
   const { state, calculateResult } = useQuiz();
@@ -37,16 +38,81 @@ const Recommendations: React.FC = () => {
   const [nearbyColleges, setNearbyColleges] = useState<College[]>([]);
   const [showNearbyColleges, setShowNearbyColleges] = useState(false);
   const [loadingNearby, setLoadingNearby] = useState(false);
+  const [courseJobTitles, setCourseJobTitles] = useState<{[key: string]: string[]}>({});
+  const [showGovtCollegeAlert, setShowGovtCollegeAlert] = useState(false);
 
   useEffect(() => {
     if (state.isComplete && state.answers.length >= 5) {
       const fetchResult = async () => {
         const calculatedResult = await calculateResult();
         setResult(calculatedResult);
+        
+        // Check if government colleges were requested but not found
+        if (calculatedResult && state.answers.find(a => a.questionId === 2 && a.selectedOption === 0)) {
+          const hasGovtColleges = calculatedResult.colleges.some(college => 
+            college.type?.toLowerCase().includes('govt')
+          );
+          if (!hasGovtColleges) {
+            setShowGovtCollegeAlert(true);
+          }
+        }
       };
       fetchResult();
     }
   }, [state, calculateResult]);
+
+  // Fetch job titles for courses
+  useEffect(() => {
+    if (result) {
+      fetchJobTitles();
+    }
+  }, [result]);
+
+  const fetchJobTitles = async () => {
+    if (!result) return;
+    
+    const jobTitlesMap: {[key: string]: string[]} = {};
+    
+    for (const course of result.recommendations) {
+      try {
+        // First try to find job titles in the database
+        const { data: careerPath, error } = await supabase
+          .from('career_paths')
+          .select('job_titles')
+          .ilike('course_name', `%${course.name}%`)
+          .single();
+
+        if (careerPath && !error) {
+          jobTitlesMap[course.name] = careerPath.job_titles;
+        } else {
+          // Fallback to Gemini AI if not found in database
+          const { data: aiResponse, error: aiError } = await supabase.functions.invoke('chatbot', {
+            body: {
+              message: `List 5 realistic job titles for someone who completes ${course.name}. Return only a simple comma-separated list without numbering or formatting.`,
+              sessionId: 'job-fetch-' + Date.now()
+            }
+          });
+
+          if (aiResponse && !aiError) {
+            const jobTitles = aiResponse.response
+              .split(',')
+              .map((title: string) => title.trim())
+              .filter((title: string) => title.length > 0)
+              .slice(0, 5);
+            jobTitlesMap[course.name] = jobTitles;
+          } else {
+            // Default fallback
+            jobTitlesMap[course.name] = ['Specialist', 'Analyst', 'Consultant', 'Manager', 'Executive'];
+          }
+        }
+      } catch (error) {
+        console.error('Error fetching job titles for', course.name, error);
+        jobTitlesMap[course.name] = ['Specialist', 'Analyst', 'Consultant', 'Manager', 'Executive'];
+      }
+    }
+    
+    setCourseJobTitles(jobTitlesMap);
+  };
 
   const handleDownloadReport = () => {
     if (!result) return;
@@ -67,24 +133,6 @@ const Recommendations: React.FC = () => {
     });
   };
 
-  const handleDownloadFlowchart = () => {
-    if (!result) return;
-    
-    if (!studentName.trim()) {
-      toast({
-        title: "Please enter your name",
-        description: "Your name is required to generate the flowchart.",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    generateFlowchartPDF(result, studentName);
-    toast({
-      title: "Flowchart downloaded!",
-      description: "Your career pathway flowchart has been downloaded successfully.",
-    });
-  };
 
   const toggleCourseExpansion = (courseId: number) => {
     setExpandedCourse(expandedCourse === courseId ? null : courseId);
@@ -275,6 +323,24 @@ const Recommendations: React.FC = () => {
                             <p className="text-sm font-medium text-primary mb-1">Career Scope:</p>
                             <p className="text-sm text-muted-foreground">{course.scope}</p>
                           </div>
+                          
+                          {/* Job Titles Section */}
+                          {courseJobTitles[course.name] && (
+                            <div className="p-3 bg-accent/10 rounded-lg">
+                              <p className="text-sm font-medium text-accent-foreground mb-2 flex items-center">
+                                <Briefcase className="h-4 w-4 mr-1" />
+                                Possible Job Titles:
+                              </p>
+                              <ul className="text-sm text-muted-foreground space-y-1">
+                                {courseJobTitles[course.name].map((jobTitle, jobIndex) => (
+                                  <li key={jobIndex} className="flex items-center">
+                                    <span className="w-1.5 h-1.5 bg-primary rounded-full mr-2 flex-shrink-0"></span>
+                                    {jobTitle}
+                                  </li>
+                                ))}
+                              </ul>
+                            </div>
+                          )}
                         </div>
                       </CardContent>
                     </CollapsibleContent>
@@ -345,63 +411,35 @@ const Recommendations: React.FC = () => {
         </div>
 
         {/* PDF Download Section */}
-        <div className="grid md:grid-cols-2 gap-6 mt-8">
-          <Card className="card-gradient shadow-medium border-0">
-            <CardHeader>
-              <CardTitle className="flex items-center">
-                <Download className="h-6 w-6 mr-2" />
-                Download Detailed Report
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <p className="text-muted-foreground">
-                Generate a comprehensive PDF report with your recommendations to share with parents and counselors.
-              </p>
-              <div className="flex flex-col sm:flex-row gap-4">
-                <Input
-                  placeholder="Enter your name for the report"
-                  value={studentName}
-                  onChange={(e) => setStudentName(e.target.value)}
-                  className="flex-1"
-                />
-                <Button onClick={handleDownloadReport} className="flex items-center space-x-2">
-                  <Download className="h-4 w-4" />
-                  <span>Download Report</span>
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card className="card-gradient shadow-medium border-0">
-            <CardHeader>
-              <CardTitle className="flex items-center">
-                <FileText className="h-6 w-6 mr-2" />
-                Download Career Flowchart
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <p className="text-muted-foreground">
-                Get a visual flowchart showing your career pathway from stream selection to future opportunities.
-              </p>
-              <div className="flex flex-col sm:flex-row gap-4">
-                <Input
-                  placeholder="Enter your name for the flowchart"
-                  value={studentName}
-                  onChange={(e) => setStudentName(e.target.value)}
-                  className="flex-1"
-                />
-                <Button onClick={handleDownloadFlowchart} variant="outline" className="flex items-center space-x-2">
-                  <FileText className="h-4 w-4" />
-                  <span>Download Flowchart</span>
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
+        <Card className="mt-8 card-gradient shadow-medium border-0">
+          <CardHeader>
+            <CardTitle className="flex items-center">
+              <Download className="h-6 w-6 mr-2" />
+              Download Detailed Report
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <p className="text-muted-foreground">
+              Generate a comprehensive PDF report with your recommendations to share with parents and counselors.
+            </p>
+            <div className="flex flex-col sm:flex-row gap-4">
+              <Input
+                placeholder="Enter your name for the report"
+                value={studentName}
+                onChange={(e) => setStudentName(e.target.value)}
+                className="flex-1"
+              />
+              <Button onClick={handleDownloadReport} className="flex items-center space-x-2">
+                <Download className="h-4 w-4" />
+                <span>Download Report</span>
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
 
         {/* AI-Generated Career Flowchart */}
         <div className="mt-8">
-          <CareerFlowchart quizResult={result} studentName={studentName} />
+          <CareerFlowchart quizResult={result} studentName={studentName || "Student"} />
         </div>
 
         {/* Next Steps */}
@@ -499,6 +537,23 @@ const Recommendations: React.FC = () => {
             </CardContent>
           </Card>
         )}
+        
+        {/* Government College Alert Dialog */}
+        <AlertDialog open={showGovtCollegeAlert} onOpenChange={setShowGovtCollegeAlert}>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>Government Colleges Not Available</AlertDialogTitle>
+              <AlertDialogDescription>
+                No government colleges found for your location. We're showing private colleges instead to provide you with the best available options.
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogAction onClick={() => setShowGovtCollegeAlert(false)}>
+                Continue
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
       </div>
     </div>
   );
