@@ -13,16 +13,16 @@ serve(async (req) => {
   }
 
   try {
-    const perplexityApiKey = Deno.env.get('PERPLEXITY_API_KEY');
-    if (!perplexityApiKey) {
-      throw new Error('PERPLEXITY_API_KEY is not set');
+    const geminiApiKey = Deno.env.get('GOOGLE_GEMINI_API_KEY');
+    if (!geminiApiKey) {
+      throw new Error('GOOGLE_GEMINI_API_KEY is not set');
     }
 
     const { quizData, userProfile } = await req.json();
     console.log('Received request with quiz data:', quizData);
     console.log('User profile:', userProfile);
 
-    // Construct the prompt for Perplexity
+    // Construct the prompt for Gemini
     const prompt = `As a career guidance expert, create a comprehensive career flowchart for the following student:
 
 Student Profile:
@@ -50,52 +50,48 @@ For each stage, provide:
 
 Focus on the ${quizData.stream} stream and ensure all recommendations align with the student's assessed interests and strengths.
 
-Return the response as a structured JSON object with flowchart data including nodes, connections, and detailed information for each pathway stage.`;
+Provide a comprehensive career guidance response with detailed pathway suggestions and actionable advice.`;
 
-    console.log('Sending request to Perplexity API...');
+    console.log('Sending request to Gemini API...');
 
-    const response = await fetch('https://api.perplexity.ai/chat/completions', {
+    const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent?key=${geminiApiKey}`, {
       method: 'POST',
       headers: {
-        'Authorization': `Bearer ${perplexityApiKey}`,
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        model: 'llama-3.1-sonar-large-128k-online',
-        messages: [
+        contents: [
           {
-            role: 'system',
-            content: 'You are a career guidance expert. Provide detailed, actionable career advice and return responses in structured JSON format when requested.'
-          },
-          {
-            role: 'user',
-            content: prompt
+            parts: [
+              {
+                text: prompt
+              }
+            ]
           }
         ],
-        temperature: 0.2,
-        top_p: 0.9,
-        max_tokens: 2000,
-        return_images: false,
-        return_related_questions: false,
-        frequency_penalty: 1,
-        presence_penalty: 0
+        generationConfig: {
+          temperature: 0.2,
+          topK: 40,
+          topP: 0.9,
+          maxOutputTokens: 2000,
+        }
       }),
     });
 
     if (!response.ok) {
       const errorText = await response.text();
-      console.error('Perplexity API error:', response.status, errorText);
-      throw new Error(`Perplexity API error: ${response.status} ${errorText}`);
+      console.error('Gemini API error:', response.status, errorText);
+      throw new Error(`Gemini API error: ${response.status} ${errorText}`);
     }
 
-    const perplexityData = await response.json();
-    console.log('Perplexity API response:', JSON.stringify(perplexityData, null, 2));
+    const geminiData = await response.json();
+    console.log('Gemini API response:', JSON.stringify(geminiData, null, 2));
 
-    if (!perplexityData.choices || !perplexityData.choices[0] || !perplexityData.choices[0].message) {
-      throw new Error('Invalid response structure from Perplexity API');
+    if (!geminiData.candidates || !geminiData.candidates[0] || !geminiData.candidates[0].content) {
+      throw new Error('Invalid response structure from Gemini API');
     }
 
-    const generatedText = perplexityData.choices[0].message.content;
+    const generatedText = geminiData.candidates[0].content.parts[0].text;
     console.log('Generated text:', generatedText);
 
     // Create structured flowchart data based on the AI response
@@ -173,7 +169,7 @@ Return the response as a structured JSON object with flowchart data including no
     console.error('Error in generate-career-flowchart function:', error);
     return new Response(JSON.stringify({ 
       error: error.message,
-      details: 'Failed to generate career flowchart using Perplexity API'
+      details: 'Failed to generate career flowchart using Gemini API'
     }), {
       status: 500,
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
