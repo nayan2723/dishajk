@@ -1,8 +1,10 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
-import { Loader2, TrendingUp } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Loader2, TrendingUp, Download, Sparkles } from 'lucide-react';
 import { toast } from 'sonner';
 import mermaid from 'mermaid';
+import html2canvas from 'html2canvas';
 import { supabase } from '@/integrations/supabase/client';
 import { QuizResult } from '@/types';
 
@@ -33,6 +35,7 @@ interface CareerFlowchartProps {
 export const CareerFlowchart: React.FC<CareerFlowchartProps> = ({ quizResult, studentName }) => {
   const [flowchartData, setFlowchartData] = useState<FlowchartData | null>(null);
   const [isGenerating, setIsGenerating] = useState(false);
+  const [isGenerated, setIsGenerated] = useState(false);
   const mermaidRef = useRef<HTMLDivElement>(null);
   const flowchartRef = useRef<HTMLDivElement>(null);
 
@@ -67,12 +70,36 @@ export const CareerFlowchart: React.FC<CareerFlowchartProps> = ({ quizResult, st
       if (error) throw error;
 
       setFlowchartData(data.flowchartData);
+      setIsGenerated(true);
       toast.success('Career flowchart generated successfully!');
     } catch (error) {
       console.error('Error generating flowchart:', error);
       toast.error('Failed to generate flowchart. Please try again.');
     } finally {
       setIsGenerating(false);
+    }
+  };
+
+  const downloadFlowchart = async () => {
+    if (!mermaidRef.current || !flowchartData) return;
+
+    try {
+      const canvas = await html2canvas(mermaidRef.current, {
+        backgroundColor: '#ffffff',
+        scale: 2,
+        useCORS: true,
+        allowTaint: true,
+      });
+
+      const link = document.createElement('a');
+      link.download = `${studentName.replace(/\s+/g, '_')}_Career_Flowchart.png`;
+      link.href = canvas.toDataURL();
+      link.click();
+      
+      toast.success('Flowchart downloaded successfully!');
+    } catch (error) {
+      console.error('Error downloading flowchart:', error);
+      toast.error('Failed to download flowchart. Please try again.');
     }
   };
 
@@ -132,12 +159,6 @@ export const CareerFlowchart: React.FC<CareerFlowchartProps> = ({ quizResult, st
     }
   }, [flowchartData]);
 
-  // Auto-generate flowchart when component mounts
-  useEffect(() => {
-    if (quizResult && !flowchartData && !isGenerating) {
-      generateFlowchart();
-    }
-  }, [quizResult]);
 
   return (
     <div className="w-full">
@@ -153,49 +174,30 @@ export const CareerFlowchart: React.FC<CareerFlowchartProps> = ({ quizResult, st
               <Loader2 className="mx-auto h-8 w-8 animate-spin text-primary mb-4" />
               <p className="text-muted-foreground">Generating your personalized career flowchart...</p>
             </div>
-          ) : !flowchartData ? (
-            <div className="text-center py-8 text-muted-foreground">
-              <p>Unable to generate flowchart. Please try refreshing the page.</p>
+          ) : !isGenerated ? (
+            <div className="text-center py-8">
+              <p className="text-muted-foreground mb-4">Generate an AI-powered career flowchart tailored to your quiz results</p>
+              <Button onClick={generateFlowchart} className="gap-2">
+                <Sparkles className="h-4 w-4" />
+                Generate Career Flowchart
+              </Button>
             </div>
           ) : (
-            <div ref={flowchartRef} className="space-y-6">
-              <div className="text-center mb-6">
-                <h3 className="text-2xl font-bold mb-2">{flowchartData.title}</h3>
-                <p className="text-muted-foreground">AI-Generated Career Pathway</p>
-              </div>
-              
-              <div 
-                ref={mermaidRef} 
-                className="flex justify-center items-center min-h-[400px] bg-white rounded-lg border p-6 overflow-x-auto"
-                style={{ backgroundColor: '#ffffff' }}
-              />
-              
-              {/* Detailed breakdown */}
-              <div className="grid gap-6 mt-8">
-                {flowchartData.nodes.map((node) => (
-                  node.options && (
-                    <div key={node.id} className="space-y-3">
-                      <h4 className="font-semibold text-lg text-primary">{node.label}</h4>
-                      <div className="grid gap-3 md:grid-cols-2 lg:grid-cols-3">
-                        {node.options.map((option, index) => (
-                          <Card key={index} className="p-4 hover:shadow-md transition-all">
-                            <h5 className="font-medium text-foreground mb-2">{option.name}</h5>
-                            {option.duration && (
-                              <p className="text-sm text-muted-foreground mb-1">⏱️ Duration: {option.duration}</p>
-                            )}
-                            {option.sector && (
-                              <p className="text-sm text-muted-foreground mb-2">🏢 Sector: {option.sector}</p>
-                            )}
-                            <p className="text-sm text-muted-foreground">{option.description}</p>
-                          </Card>
-                        ))}
-                      </div>
-                    </div>
-                  )
-                ))}
-              </div>
+            <div className="text-center py-8">
+              <p className="text-muted-foreground mb-4">Your personalized career flowchart is ready!</p>
+              <Button onClick={downloadFlowchart} className="gap-2">
+                <Download className="h-4 w-4" />
+                Download Flowchart
+              </Button>
             </div>
           )}
+          
+          {/* Hidden mermaid container for generating the image */}
+          <div 
+            ref={mermaidRef} 
+            className="hidden"
+            style={{ backgroundColor: '#ffffff', padding: '20px' }}
+          />
         </CardContent>
       </Card>
     </div>
