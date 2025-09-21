@@ -41,14 +41,15 @@ serve(async (req) => {
 
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
-    // Determine if this is a college/course query
-    const isCollegeQuery = /college|course|admission|engineering|medical|commerce|science|arts|bca|bba|ba|bsc|mca|mba|degree|university|institute/i.test(message);
+    // Determine if this is a college/course query that needs database search
+    const isSpecificCollegeQuery = /show me|list|find|colleges in|institutes in|admission in/i.test(message) && 
+                                  /college|institute|university/i.test(message);
     
     let collegeData = null;
     let response = '';
 
-    if (isCollegeQuery) {
-      console.log('Detected college query, searching database...');
+    if (isSpecificCollegeQuery) {
+      console.log('Detected specific college query, searching database...');
       
       // Extract location/district from message
       const locations = ['srinagar', 'jammu', 'kathua', 'udhampur', 'doda', 'rajouri', 'poonch', 'anantnag', 'pulwama', 'budgam', 'baramulla', 'kupwara', 'kulgam', 'shopian', 'ganderbal', 'bandipora', 'leh', 'kargil', 'ramban', 'kishtwar', 'samba', 'reasi'];
@@ -78,7 +79,7 @@ serve(async (req) => {
     }
 
     // Prepare context for Gemini
-    let contextPrompt = `You are DISHA Mentor, a friendly and knowledgeable career guidance counselor for students in Jammu & Kashmir. You provide empathetic, helpful advice about careers, courses, and education paths.
+    let contextPrompt = `You are DISHA Mentor, a friendly and knowledgeable career guidance counselor for students in Jammu & Kashmir. You provide empathetic, helpful advice about careers, courses, education paths, degrees, and scholarships.
 
 Current user query: "${message}"
 
@@ -86,7 +87,7 @@ Conversation history: ${conversationHistory ? JSON.stringify(conversationHistory
 
 ${userProfile ? `User profile: ${JSON.stringify(userProfile)}` : ''}
 
-${collegeData ? `
+${collegeData && collegeData.length > 0 ? `
 I found ${collegeData.length} colleges in our database that match the query:
 ${JSON.stringify(collegeData, null, 2)}
 
@@ -97,17 +98,39 @@ Please provide a helpful response that:
 4. Suggests next steps
 
 Format college information in a friendly, conversational way. Don't just list data - explain why these options might be good for them.
-` : `
-This appears to be a general career guidance question. Please provide helpful, encouraging advice based on your expertise in education and career counseling for J&K students.
-`}
+` : ''}
+
+For questions about degrees, courses, scholarships, or career guidance for J&K students, provide accurate and helpful information including:
+
+DEGREES & COURSES:
+- Popular undergraduate courses: Engineering (B.Tech), Medical (MBBS, BDS), Commerce (B.Com), Arts (BA), Science (B.Sc), Computer Applications (BCA), Business Administration (BBA)
+- Postgraduate options: MBA, MCA, M.Tech, MA, M.Sc, specialized degrees
+- Professional courses: CA, CS, CMA, Law (LLB), Teaching (B.Ed), Nursing, Pharmacy
+
+SCHOLARSHIPS FOR J&K STUDENTS:
+- Prime Minister's Scholarship Scheme for J&K students
+- Merit-cum-Means Scholarship
+- National Scholarship Portal schemes
+- J&K Bank Educational Loan schemes
+- Central government scholarships for professional courses
+- State government scholarships and fee waivers
+- Minority scholarships if applicable
+
+CAREER PATHS:
+- Government jobs: JKPSC, JKSSB, Banking, Teaching, Administrative services
+- Private sector opportunities in IT, Banking, Healthcare, Tourism
+- Entrepreneurship opportunities in J&K
+- Remote work opportunities
+- Skill development programs available in J&K
 
 Guidelines:
 - Be warm, encouraging, and supportive
-- Provide practical, actionable advice
-- Consider the local context of Jammu & Kashmir
-- If discussing career paths, mention realistic options and growth potential
-- Keep responses conversational but informative
-- If you don't have specific data, be honest but still helpful`;
+- Provide practical, actionable advice specific to J&K context
+- Keep responses concise but informative (2-3 key points maximum)
+- Focus on answering exactly what the user asks
+- Mention realistic opportunities and growth potential
+- If you don't have specific current data, acknowledge limitations but still provide helpful guidance
+- Always end with encouragement and next steps`;
 
     // Call Gemini API
     const geminiResponse = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent?key=${geminiApiKey}`, {

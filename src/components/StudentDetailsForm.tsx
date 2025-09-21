@@ -13,7 +13,11 @@ interface StudentData {
   phone: string;
 }
 
-const StudentDetailsForm: React.FC = () => {
+interface StudentDetailsFormProps {
+  onSuccess?: (studentId: string) => void;
+}
+
+const StudentDetailsForm: React.FC<StudentDetailsFormProps> = ({ onSuccess }) => {
   const navigate = useNavigate();
   const [formData, setFormData] = useState<StudentData>({
     name: '',
@@ -61,8 +65,12 @@ const StudentDetailsForm: React.FC = () => {
 
       toast({ title: "Success", description: "Details saved successfully!", variant: "default" });
 
-      // Redirect to /recommendations
-      navigate('/recommendations');
+      if (onSuccess) {
+        onSuccess(data.id);
+      } else {
+        // Redirect to /recommendations
+        navigate('/recommendations');
+      }
     } catch (error) {
       console.error('Error saving student details:', error);
       toast({ title: "Error", description: "Failed to save details. Please try again.", variant: "destructive" });
