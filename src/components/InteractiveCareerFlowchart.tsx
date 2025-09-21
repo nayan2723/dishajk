@@ -18,242 +18,77 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
-import { Loader2, TrendingUp, Download, Sparkles, X, Clock, Target, MapPin, BookOpen, Briefcase, GraduationCap, Building } from 'lucide-react';
+import { Loader2, TrendingUp, Download, Sparkles, X, Clock, Target, MapPin, BookOpen, Briefcase, GraduationCap, Building, ChevronRight } from 'lucide-react';
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
 import { QuizResult } from '@/types';
 
-interface FlowchartNode {
-  id: string;
-  label: string;
-  type: string;
-  description?: string;
-  timeline?: string;
-  resources?: string[];
-  skills?: string[];
-  prerequisites?: string[];
-  options?: Array<{
-    name: string;
-    duration?: string;
-    sector?: string;
-    description: string;
-    salary_range?: string;
-    skills_required?: string[];
-  }>;
-}
+// Import flowchart images
+import commerceRoadmap from '@/assets/flowcharts/commerce-roadmap.png';
+import artsEducationRoadmap from '@/assets/flowcharts/arts-education-roadmap.png';
+import lawRoadmap from '@/assets/flowcharts/law-roadmap.png';
+import pharmacyRoadmap from '@/assets/flowcharts/pharmacy-roadmap.png';
+import ayurvedaRoadmap from '@/assets/flowcharts/ayurveda-roadmap.png';
+import nursingRoadmap from '@/assets/flowcharts/nursing-roadmap.png';
+import dentalRoadmap from '@/assets/flowcharts/dental-roadmap.png';
+import medicalRoadmap from '@/assets/flowcharts/medical-roadmap.png';
+import computerRoadmap from '@/assets/flowcharts/computer-roadmap.png';
+import engineeringRoadmap from '@/assets/flowcharts/engineering-roadmap.png';
 
-interface FlowchartData {
-  title: string;
-  nodes: FlowchartNode[];
-  connections: Array<{ from: string; to: string }>;
-}
+// Flowchart mapping based on course recommendations
+const flowchartMap = {
+  // Commerce stream
+  'B.Com/BBA': commerceRoadmap,
+  'CA/CS/CMA': commerceRoadmap,
+  'BCA/IT': computerRoadmap,
+  
+  // Science stream
+  'B.Tech/Engineering': engineeringRoadmap,
+  'MBBS/Medical': medicalRoadmap,
+  'B.Sc (Physics/Chemistry/Biology)': medicalRoadmap,
+  'B.Pharm': pharmacyRoadmap,
+  'BAMS/BUMS': ayurvedaRoadmap,
+  'BDS': dentalRoadmap,
+  'B.Sc Nursing': nursingRoadmap,
+  
+  // Arts stream  
+  'B.A (English/History/Psychology)': artsEducationRoadmap,
+  'Mass Communication/Journalism': artsEducationRoadmap,
+  'Social Work/NGO Management': artsEducationRoadmap,
+  'LLB/Law': lawRoadmap,
+};
 
 interface CareerFlowchartProps {
   quizResult: QuizResult;
   studentName: string;
 }
 
-// Custom node component
-const CustomNode = ({ data, id }: { data: any; id: string }) => {
-  const { setSelectedNode } = data;
-  
-  const nodeColors = {
-    start: 'from-primary/20 to-primary/10 border-primary/30 text-primary',
-    course: 'from-success/20 to-success/10 border-success/30 text-success',
-    skill: 'from-warning/20 to-warning/10 border-warning/30 text-warning',
-    career: 'from-accent/20 to-accent/10 border-accent/30 text-accent',
-    education: 'from-secondary/20 to-secondary/10 border-secondary/30 text-secondary',
-  };
-
-  const icons = {
-    start: Target,
-    course: BookOpen,
-    skill: Briefcase,
-    career: TrendingUp,
-    education: GraduationCap,
-  };
-
-  const IconComponent = icons[data.nodeType as keyof typeof icons] || Target;
-  const colorClass = nodeColors[data.nodeType as keyof typeof nodeColors] || nodeColors.start;
-
-  return (
-    <div 
-      className={`
-        relative px-4 py-3 rounded-lg border-2 min-w-[180px] max-w-[220px] 
-        bg-gradient-to-br ${colorClass}
-        hover:scale-105 hover:shadow-lg transform transition-all duration-300 cursor-pointer
-        backdrop-blur-sm shadow-soft
-      `}
-      onClick={() => setSelectedNode({ id, ...data })}
-    >
-      <div className="flex items-center gap-2 mb-2">
-        <IconComponent className="w-4 h-4 flex-shrink-0" />
-        <h3 className="font-semibold text-sm leading-tight">{data.label}</h3>
-      </div>
-      {data.subtitle && (
-        <p className="text-xs opacity-80 leading-tight">{data.subtitle}</p>
-      )}
-      {data.duration && (
-        <div className="flex items-center gap-1 mt-2">
-          <Clock className="w-3 h-3" />
-          <span className="text-xs opacity-80">{data.duration}</span>
-        </div>
-      )}
-    </div>
-  );
-};
-
-const nodeTypes = {
-  custom: CustomNode,
-};
-
 export const InteractiveCareerFlowchart: React.FC<CareerFlowchartProps> = ({ 
   quizResult, 
   studentName 
 }) => {
-  const [flowchartData, setFlowchartData] = useState<FlowchartData | null>(null);
-  const [isGenerating, setIsGenerating] = useState(false);
-  const [isGenerated, setIsGenerated] = useState(false);
-  const [selectedNode, setSelectedNode] = useState<any>(null);
-  const [nodes, setNodes, onNodesChange] = useNodesState([]);
-  const [edges, setEdges, onEdgesChange] = useEdgesState([]);
+  const [selectedCourse, setSelectedCourse] = useState<string | null>(null);
 
-  // Generate flowchart data
-  const generateFlowchart = async () => {
-    setIsGenerating(true);
-    try {
-      const { data, error } = await supabase.functions.invoke('generate-career-flowchart', {
-        body: {
-          quizData: quizResult,
-          userProfile: quizResult.userProfile
-        }
-      });
+  // Get available flowcharts based on recommendations
+  const availableFlowcharts = useMemo(() => {
+    return quizResult.recommendations.map(rec => ({
+      name: rec.name,
+      description: rec.description,
+      duration: rec.duration,
+      scope: rec.scope,
+      flowchart: flowchartMap[rec.name as keyof typeof flowchartMap]
+    })).filter(item => item.flowchart);
+  }, [quizResult.recommendations]);
 
-      if (error) throw error;
-
-      setFlowchartData(data.flowchartData);
-      setIsGenerated(true);
-      toast.success('Career flowchart generated successfully!');
-    } catch (error) {
-      console.error('Error generating flowchart:', error);
-      toast.error('Failed to generate flowchart. Please try again.');
-    } finally {
-      setIsGenerating(false);
-    }
-  };
-
-  // Convert flowchart data to React Flow nodes and edges
-  const processFlowchartData = useCallback(() => {
-    if (!flowchartData) return;
-
-    const newNodes: Node[] = [];
-    const newEdges: Edge[] = [];
-    let yPosition = 0;
-    const xSpacing = 300;
-    const ySpacing = 150;
-
-    // Process each node type
-    flowchartData.nodes.forEach((node, nodeIndex) => {
-      if (node.type === 'start') {
-        newNodes.push({
-          id: node.id,
-          type: 'custom',
-          position: { x: 400, y: yPosition },
-          data: { 
-            label: node.label,
-            description: node.description,
-            nodeType: 'start',
-            setSelectedNode,
-            timeline: node.timeline,
-            resources: node.resources,
-            skills: node.skills,
-          },
-        });
-        yPosition += ySpacing;
-      } else if (node.options) {
-        // Create a title node for this section
-        const titleNodeId = `${node.type}-title`;
-        newNodes.push({
-          id: titleNodeId,
-          type: 'custom',
-          position: { x: 400, y: yPosition },
-          data: { 
-            label: node.label,
-            description: node.description,
-            nodeType: node.type,
-            setSelectedNode,
-          },
-        });
-
-        yPosition += ySpacing;
-        const currentY = yPosition;
-
-        // Create nodes for each option
-        node.options.forEach((option, optionIndex) => {
-          const optionId = `${node.type}-${optionIndex}`;
-          const xPos = 150 + (optionIndex % 3) * xSpacing;
-          const yPos = currentY + Math.floor(optionIndex / 3) * ySpacing;
-
-          newNodes.push({
-            id: optionId,
-            type: 'custom',
-            position: { x: xPos, y: yPos },
-            data: { 
-              label: option.name,
-              subtitle: option.duration || option.sector,
-              description: option.description,
-              nodeType: node.type,
-              duration: option.duration,
-              sector: option.sector,
-              salary_range: option.salary_range,
-              skills_required: option.skills_required,
-              setSelectedNode,
-            },
-          });
-
-          // Connect from title to options
-          newEdges.push({
-            id: `${titleNodeId}-${optionId}`,
-            source: titleNodeId,
-            target: optionId,
-            animated: true,
-            style: { stroke: 'hsl(var(--primary))', strokeWidth: 2 },
-          });
-        });
-
-        yPosition = currentY + Math.ceil(node.options.length / 3) * ySpacing;
-      }
-    });
-
-    // Connect between different sections
-    flowchartData.connections.forEach((connection, index) => {
-      newEdges.push({
-        id: `connection-${index}`,
-        source: connection.from,
-        target: connection.to,
-        animated: true,
-        style: { stroke: 'hsl(var(--primary))', strokeWidth: 2 },
-      });
-    });
-
-    setNodes(newNodes);
-    setEdges(newEdges);
-  }, [flowchartData, setNodes, setEdges]);
-
+  // Set default selected course to first available
   useEffect(() => {
-    if (flowchartData) {
-      processFlowchartData();
+    if (availableFlowcharts.length > 0 && !selectedCourse) {
+      setSelectedCourse(availableFlowcharts[0].name);
     }
-  }, [flowchartData, processFlowchartData]);
-
-  const onConnect = useCallback(
-    (params: Connection) => setEdges((eds) => addEdge(params, eds)),
-    [setEdges]
-  );
+  }, [availableFlowcharts, selectedCourse]);
 
   // Download functionality
   const downloadFlowchart = async () => {
-    // Implementation for downloading the flowchart as PDF
     toast.success('Flowchart download feature coming soon!');
   };
 
@@ -261,164 +96,62 @@ export const InteractiveCareerFlowchart: React.FC<CareerFlowchartProps> = ({
     <div className="w-full">
       <h2 className="text-2xl font-bold mb-6 flex items-center">
         <TrendingUp className="h-6 w-6 mr-2 text-primary" />
-        Interactive Career Pathway
+        Career Roadmap
       </h2>
       
-      <Card className="card-gradient shadow-medium border-0">
-        <CardContent className="p-0">
-          {isGenerating ? (
-            <div className="text-center py-12">
-              <Loader2 className="mx-auto h-8 w-8 animate-spin text-primary mb-4" />
-              <p className="text-muted-foreground">Generating your personalized career flowchart...</p>
-            </div>
-          ) : !isGenerated ? (
-            <div className="text-center py-8">
-              <p className="text-muted-foreground mb-4">
-                Generate an AI-powered interactive career flowchart tailored to your assessment results
-              </p>
-              <Button onClick={generateFlowchart} className="gap-2">
-                <Sparkles className="h-4 w-4" />
-                Generate Interactive Flowchart
+      {availableFlowcharts.length > 0 && (
+        <div className="mb-6">
+          <h3 className="text-lg font-semibold mb-3">Select Your Career Path:</h3>
+          <div className="flex flex-wrap gap-3">
+            {availableFlowcharts.map((flowchart) => (
+              <Button
+                key={flowchart.name}
+                variant={selectedCourse === flowchart.name ? "default" : "outline"}
+                onClick={() => setSelectedCourse(flowchart.name)}
+                className="gap-2"
+              >
+                <BookOpen className="h-4 w-4" />
+                {flowchart.name}
+                <ChevronRight className="h-4 w-4" />
               </Button>
+            ))}
+          </div>
+        </div>
+      )}
+
+      <Card className="card-gradient shadow-medium border-0">
+        <CardContent className="p-6">
+          {selectedCourse && availableFlowcharts.find(f => f.name === selectedCourse)?.flowchart ? (
+            <div className="space-y-4">
+              <div className="text-center">
+                <h3 className="text-xl font-semibold mb-2">{selectedCourse} Career Roadmap</h3>
+                <p className="text-muted-foreground mb-4">
+                  {availableFlowcharts.find(f => f.name === selectedCourse)?.description}
+                </p>
+              </div>
+              <div className="relative overflow-hidden rounded-lg bg-white p-4">
+                <img 
+                  src={availableFlowcharts.find(f => f.name === selectedCourse)?.flowchart} 
+                  alt={`${selectedCourse} Career Roadmap`}
+                  className="w-full h-auto max-w-4xl mx-auto"
+                />
+              </div>
+              <div className="text-center">
+                <Button onClick={downloadFlowchart} variant="outline" className="gap-2">
+                  <Download className="h-4 w-4" />
+                  Download Roadmap
+                </Button>
+              </div>
             </div>
           ) : (
-            <div className="h-[600px] w-full rounded-lg overflow-hidden">
-              <ReactFlow
-                nodes={nodes}
-                edges={edges}
-                onNodesChange={onNodesChange}
-                onEdgesChange={onEdgesChange}
-                onConnect={onConnect}
-                nodeTypes={nodeTypes}
-                fitView
-                fitViewOptions={{ padding: 0.2 }}
-                className="bg-gradient-to-br from-background/50 to-muted/30"
-              >
-                <Background color="hsl(var(--muted-foreground))" gap={20} />
-                <Controls className="bg-background/80 backdrop-blur-sm" />
-                <MiniMap 
-                  className="bg-background/80 backdrop-blur-sm" 
-                  nodeColor="hsl(var(--primary))"
-                />
-                <Panel position="top-left" className="bg-background/80 backdrop-blur-sm rounded-lg p-3 m-2">
-                  <div className="flex items-center gap-2">
-                    <Target className="w-4 h-4 text-primary" />
-                    <span className="text-sm font-medium">Your Career Journey</span>
-                  </div>
-                  <p className="text-xs text-muted-foreground mt-1">Click nodes to explore details</p>
-                </Panel>
-                <Panel position="top-right" className="m-2">
-                  <Button onClick={downloadFlowchart} variant="outline" size="sm" className="gap-2 bg-background/80 backdrop-blur-sm">
-                    <Download className="h-4 w-4" />
-                    Download
-                  </Button>
-                </Panel>
-              </ReactFlow>
+            <div className="text-center py-8">
+              <p className="text-muted-foreground">
+                No specific roadmap available for your selected courses.
+              </p>
             </div>
           )}
         </CardContent>
       </Card>
-
-      {/* Node Details Sheet */}
-      <Sheet open={!!selectedNode} onOpenChange={() => setSelectedNode(null)}>
-        <SheetContent className="w-[400px] sm:w-[540px]">
-          {selectedNode && (
-            <>
-              <SheetHeader>
-                <SheetTitle className="flex items-center gap-2">
-                  {selectedNode.nodeType === 'start' && <Target className="w-5 h-5 text-primary" />}
-                  {selectedNode.nodeType === 'course' && <BookOpen className="w-5 h-5 text-success" />}
-                  {selectedNode.nodeType === 'skill' && <Briefcase className="w-5 h-5 text-warning" />}
-                  {selectedNode.nodeType === 'career' && <TrendingUp className="w-5 h-5 text-accent" />}
-                  {selectedNode.nodeType === 'education' && <GraduationCap className="w-5 h-5 text-secondary" />}
-                  {selectedNode.label}
-                </SheetTitle>
-              </SheetHeader>
-
-              <div className="space-y-6 mt-6">
-                {selectedNode.description && (
-                  <div>
-                    <h4 className="font-semibold mb-2">Description</h4>
-                    <p className="text-muted-foreground">{selectedNode.description}</p>
-                  </div>
-                )}
-
-                {selectedNode.duration && (
-                  <div className="flex items-center gap-2">
-                    <Clock className="w-4 h-4 text-primary" />
-                    <span className="font-medium">Duration:</span>
-                    <span className="text-muted-foreground">{selectedNode.duration}</span>
-                  </div>
-                )}
-
-                {selectedNode.sector && (
-                  <div className="flex items-center gap-2">
-                    <Building className="w-4 h-4 text-primary" />
-                    <span className="font-medium">Sector:</span>
-                    <span className="text-muted-foreground">{selectedNode.sector}</span>
-                  </div>
-                )}
-
-                {selectedNode.salary_range && (
-                  <div>
-                    <h4 className="font-semibold mb-2">Expected Salary Range</h4>
-                    <Badge variant="outline" className="text-success">
-                      {selectedNode.salary_range}
-                    </Badge>
-                  </div>
-                )}
-
-                {selectedNode.skills_required && selectedNode.skills_required.length > 0 && (
-                  <div>
-                    <h4 className="font-semibold mb-2">Skills Required</h4>
-                    <div className="flex flex-wrap gap-2">
-                      {selectedNode.skills_required.map((skill: string, index: number) => (
-                        <Badge key={index} variant="secondary">
-                          {skill}
-                        </Badge>
-                      ))}
-                    </div>
-                  </div>
-                )}
-
-                {selectedNode.skills && selectedNode.skills.length > 0 && (
-                  <div>
-                    <h4 className="font-semibold mb-2">Key Skills</h4>
-                    <div className="flex flex-wrap gap-2">
-                      {selectedNode.skills.map((skill: string, index: number) => (
-                        <Badge key={index} variant="secondary">
-                          {skill}
-                        </Badge>
-                      ))}
-                    </div>
-                  </div>
-                )}
-
-                {selectedNode.resources && selectedNode.resources.length > 0 && (
-                  <div>
-                    <h4 className="font-semibold mb-2">Recommended Resources</h4>
-                    <ul className="space-y-2">
-                      {selectedNode.resources.map((resource: string, index: number) => (
-                        <li key={index} className="flex items-start gap-2">
-                          <div className="w-1.5 h-1.5 bg-primary rounded-full mt-2 flex-shrink-0" />
-                          <span className="text-muted-foreground">{resource}</span>
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
-                )}
-
-                {selectedNode.timeline && (
-                  <div>
-                    <h4 className="font-semibold mb-2">Timeline</h4>
-                    <p className="text-muted-foreground">{selectedNode.timeline}</p>
-                  </div>
-                )}
-              </div>
-            </>
-          )}
-        </SheetContent>
-      </Sheet>
     </div>
   );
 };
