@@ -34,13 +34,19 @@ import dentalRoadmap from '@/assets/flowcharts/dental-roadmap.png';
 import medicalRoadmap from '@/assets/flowcharts/medical-roadmap.png';
 import computerRoadmap from '@/assets/flowcharts/computer-roadmap.png';
 import engineeringRoadmap from '@/assets/flowcharts/engineering-roadmap.png';
+import upscCivilServicesRoadmap from '@/assets/flowcharts/upsc-civil-services-roadmap.png';
+import designUiuxRoadmap from '@/assets/flowcharts/design-uiux-roadmap.png';
+import polytechnicItiRoadmap from '@/assets/flowcharts/polytechnic-iti-roadmap.png';
+import bbaMbaRoadmap from '@/assets/flowcharts/bba-mba-roadmap.png';
 
 // Flowchart mapping based on course recommendations
 const flowchartMap = {
   // Commerce stream
-  'B.Com/BBA': commerceRoadmap,
+  'B.Com/BBA': bbaMbaRoadmap,
   'CA/CS/CMA': commerceRoadmap,
   'BCA/IT': computerRoadmap,
+  'BBA': bbaMbaRoadmap,
+  'MBA': bbaMbaRoadmap,
   
   // Science stream
   'B.Tech/Engineering': engineeringRoadmap,
@@ -50,12 +56,20 @@ const flowchartMap = {
   'BAMS/BUMS': ayurvedaRoadmap,
   'BDS': dentalRoadmap,
   'B.Sc Nursing': nursingRoadmap,
+  'Polytechnic': polytechnicItiRoadmap,
+  'ITI': polytechnicItiRoadmap,
+  'Diploma': polytechnicItiRoadmap,
   
   // Arts stream  
   'B.A (English/History/Psychology)': artsEducationRoadmap,
   'Mass Communication/Journalism': artsEducationRoadmap,
   'Social Work/NGO Management': artsEducationRoadmap,
   'LLB/Law': lawRoadmap,
+  'Civil Services': upscCivilServicesRoadmap,
+  'UPSC': upscCivilServicesRoadmap,
+  'Design': designUiuxRoadmap,
+  'UI/UX Design': designUiuxRoadmap,
+  'Graphic Design': designUiuxRoadmap,
 };
 
 interface CareerFlowchartProps {
@@ -89,7 +103,36 @@ export const InteractiveCareerFlowchart: React.FC<CareerFlowchartProps> = ({
 
   // Download functionality
   const downloadFlowchart = async () => {
-    toast.success('Flowchart download feature coming soon!');
+    if (!selectedCourse) {
+      toast.error('No flowchart selected');
+      return;
+    }
+
+    const selectedFlowchart = availableFlowcharts.find(f => f.name === selectedCourse);
+    if (!selectedFlowchart?.flowchart) {
+      toast.error('Flowchart not available for download');
+      return;
+    }
+
+    try {
+      // Create a temporary link element for download
+      const link = document.createElement('a');
+      link.href = selectedFlowchart.flowchart;
+      
+      // Generate a clean filename
+      const fileName = `${selectedCourse.replace(/[^a-z0-9]/gi, '_').toLowerCase()}_career_roadmap.png`;
+      link.download = fileName;
+      
+      // Append to body, click, and remove
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      
+      toast.success('Flowchart downloaded successfully!');
+    } catch (error) {
+      console.error('Download failed:', error);
+      toast.error('Failed to download flowchart. Please try again.');
+    }
   };
 
   return (
