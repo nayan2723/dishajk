@@ -12,7 +12,7 @@ import { toast } from 'sonner';
 import HeroCarousel from '@/components/HeroCarousel';
 import { HeroGeometric } from '@/components/ui/shape-landing-hero';
 import { supabase } from '@/integrations/supabase/client';
-
+import logo from "@/assets/logo-img.png"
 const Home: React.FC = () => {
   const features = [
     {
@@ -92,7 +92,7 @@ const Home: React.FC = () => {
   return (
     <div className="w-full">
       {/* Hero Section with Geometric Shapes */}
-      <HeroGeometric 
+      <HeroGeometric
         badge="Disha - Career Guidance"
         title1="Your Personalized Career &"
         title2="Education Advisor"
@@ -114,7 +114,7 @@ const Home: React.FC = () => {
             <p className="text-xl text-muted-foreground max-w-2xl mx-auto mb-8">
               Helping J&K students choose the right stream, college, and career path through personalized guidance
             </p>
-            
+
             {/* CTA Buttons */}
             <div className="flex flex-col sm:flex-row gap-4 justify-center mb-12">
               <Button
@@ -127,7 +127,7 @@ const Home: React.FC = () => {
                   <ArrowRight className="h-5 w-5 group-hover:translate-x-1 transition-transform duration-200" />
                 </Link>
               </Button>
-              
+
               <Button
                 size="lg"
                 variant="outline"
@@ -268,7 +268,7 @@ const Home: React.FC = () => {
             transition={{ duration: 0.6, delay: 0.2 }}
             viewport={{ once: true }}
           >
-            Take our comprehensive quiz and get personalized recommendations 
+            Take our comprehensive quiz and get personalized recommendations
             for your education and career journey.
           </motion.p>
           <motion.div
@@ -304,8 +304,8 @@ const Home: React.FC = () => {
                 About <span className="text-primary">Us</span>
               </h2>
               <p className="text-lg text-muted-foreground leading-relaxed mb-8">
-                We are revolutionizing career guidance through cutting-edge technology and personalized insights. 
-                Our platform combines AI-driven assessments with expert knowledge to help students in Jammu & Kashmir 
+                We are revolutionizing career guidance through cutting-edge technology and personalized insights.
+                Our platform combines AI-driven assessments with expert knowledge to help students in Jammu & Kashmir
                 discover their ideal career paths and make informed educational decisions.
               </p>
               <div className="flex flex-wrap gap-4">
@@ -331,16 +331,19 @@ const Home: React.FC = () => {
             >
               <div className="relative w-80 h-80">
                 <div className="absolute inset-0 bg-primary/10 rounded-full blur-3xl"></div>
-                <div className="relative w-full h-full card-gradient border border-border/50 rounded-3xl flex items-center justify-center shadow-soft">
-                  <div className="text-6xl">🚀</div>
+
+                <div className="relative w-full h-full card-gradient border border-border/50 rounded-3xl flex items-center justify-center shadow-soft overflow-hidden">
+                  <img
+                    src={logo}
+                    alt="Project Logo"
+                    className="w-full h-full object-contain"
+                  />
                 </div>
-                <div className="absolute -top-4 -right-4 w-24 h-24 card-gradient border border-border/50 rounded-full flex items-center justify-center shadow-soft">
-                  <div className="text-2xl">✨</div>
-                </div>
-                <div className="absolute -bottom-4 -left-4 w-20 h-20 card-gradient border border-border/50 rounded-full flex items-center justify-center shadow-soft">
-                  <div className="text-xl">🎯</div>
-                </div>
+
+                
               </div>
+
+
             </motion.div>
           </div>
 
@@ -419,7 +422,7 @@ const Home: React.FC = () => {
                     id="name"
                     {...register('name', { required: 'Name is required' })}
                     className="transition-smooth focus:ring-2 focus:ring-primary"
-                    placeholder="Your full name"
+                    placeholder="John Doe"
                   />
                   {errors.name && <p className="text-destructive text-sm mt-1">{errors.name.message as string}</p>}
                 </motion.div>
@@ -436,7 +439,7 @@ const Home: React.FC = () => {
                     type="email"
                     {...register('email', { required: 'Email is required' })}
                     className="transition-smooth focus:ring-2 focus:ring-primary"
-                    placeholder="your@email.com"
+                    placeholder="john@gmail.com"
                   />
                   {errors.email && <p className="text-destructive text-sm mt-1">{errors.email.message as string}</p>}
                 </motion.div>
@@ -453,7 +456,7 @@ const Home: React.FC = () => {
                     type="tel"
                     {...register('phone')}
                     className="transition-smooth focus:ring-2 focus:ring-primary"
-                    placeholder="Your phone number"
+                    placeholder="+91-XXXXXXXXXX"
                   />
                 </motion.div>
 
@@ -479,9 +482,9 @@ const Home: React.FC = () => {
                   transition={{ duration: 0.6, delay: 0.5 }}
                   viewport={{ once: true }}
                 >
-                  <Button 
-                    type="submit" 
-                    size="lg" 
+                  <Button
+                    type="submit"
+                    size="lg"
                     className="w-full shadow-medium transition-bounce hover:scale-105"
                     disabled={isSubmitting}
                   >
@@ -510,8 +513,8 @@ const Home: React.FC = () => {
               className="space-y-8"
             >
               <div className="card-gradient border border-border/50 p-8 rounded-2xl shadow-soft">
-                <h3 className="text-2xl font-semibold mb-6">Other Ways to Reach Us</h3>
-                
+                <h3 className="text-2xl font-semibold mb-6">Contact Us</h3>
+
                 <div className="space-y-6">
                   <motion.div
                     className="flex items-center space-x-4"
@@ -524,7 +527,7 @@ const Home: React.FC = () => {
                     <div>
                       <p className="font-medium">Email</p>
                       <a href="mailto:hello@disha.career" className="text-muted-foreground hover:text-primary transition-smooth">
-                        hello@disha.career
+                        support@disha.in
                       </a>
                     </div>
                   </motion.div>
@@ -540,7 +543,7 @@ const Home: React.FC = () => {
                     <div>
                       <p className="font-medium">Phone</p>
                       <a href="tel:+911234567890" className="text-muted-foreground hover:text-primary transition-smooth">
-                        +91 123 456 7890
+                        +91 2200-1100-55
                       </a>
                     </div>
                   </motion.div>

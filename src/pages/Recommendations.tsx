@@ -5,12 +5,12 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
-import { 
-  Award, 
-  Download, 
-  ExternalLink, 
-  MapPin, 
-  Clock, 
+import {
+  Award,
+  Download,
+  ExternalLink,
+  MapPin,
+  Clock,
   TrendingUp,
   ChevronDown,
   ChevronUp,
@@ -42,7 +42,7 @@ const Recommendations: React.FC = () => {
   const [showNearbyColleges, setShowNearbyColleges] = useState(false);
   const [loadingNearby, setLoadingNearby] = useState(false);
   const [showFallbackDialog, setShowFallbackDialog] = useState(false);
-  const [courseJobTitles, setCourseJobTitles] = useState<{[key: string]: string[]}>({});
+  const [courseJobTitles, setCourseJobTitles] = useState<{ [key: string]: string[] }>({});
   const [showGovtCollegeAlert, setShowGovtCollegeAlert] = useState(false);
 
   useEffect(() => {
@@ -50,10 +50,10 @@ const Recommendations: React.FC = () => {
       const fetchResult = async () => {
         const calculatedResult = await calculateResult();
         setResult(calculatedResult);
-        
+
         // Check if government colleges were requested but not found
         if (calculatedResult && state.answers.find(a => a.questionId === 2 && a.selectedOption === 0)) {
-          const hasGovtColleges = calculatedResult.colleges.some(college => 
+          const hasGovtColleges = calculatedResult.colleges.some(college =>
             college.type?.toLowerCase().includes('govt')
           );
           if (!hasGovtColleges) {
@@ -74,9 +74,9 @@ const Recommendations: React.FC = () => {
 
   const fetchJobTitles = async () => {
     if (!result) return;
-    
-    const jobTitlesMap: {[key: string]: string[]} = {};
-    
+
+    const jobTitlesMap: { [key: string]: string[] } = {};
+
     for (const course of result.recommendations) {
       try {
         // First try to find job titles in the database
@@ -114,13 +114,13 @@ const Recommendations: React.FC = () => {
         jobTitlesMap[course.name] = ['Specialist', 'Analyst', 'Consultant', 'Manager', 'Executive'];
       }
     }
-    
+
     setCourseJobTitles(jobTitlesMap);
   };
 
   const handleDownloadReport = () => {
     if (!result) return;
-    
+
     if (!studentName.trim()) {
       toast({
         title: "Please enter your name",
@@ -144,7 +144,7 @@ const Recommendations: React.FC = () => {
 
   const handleFindMoreColleges = async () => {
     if (!result) return;
-    
+
     setLoadingNearby(true);
     try {
       const { data: colleges, error } = await supabase
@@ -170,7 +170,7 @@ const Recommendations: React.FC = () => {
         location: 'Unknown',
         district: college['District'] || 'Unknown',
         type: college['Type'] || 'Unknown',
-        courses: college['Courses Offered (Categorized Streams)'] 
+        courses: college['Courses Offered (Categorized Streams)']
           ? college['Courses Offered (Categorized Streams)'].split(',').map((c: string) => c.trim())
           : [],
         contact: 'Contact information not available',
@@ -180,7 +180,7 @@ const Recommendations: React.FC = () => {
 
       setNearbyColleges(transformedColleges);
       setShowNearbyColleges(true);
-      
+
       toast({
         title: "Colleges Found!",
         description: `Found ${transformedColleges.length} colleges in your area.`,
@@ -265,9 +265,9 @@ const Recommendations: React.FC = () => {
             <div className="mt-4 text-sm text-muted-foreground">
               <p><strong>Future Goal:</strong> {
                 result.userProfile.futureGoals === 'higher_studies' ? 'Higher Studies' :
-                result.userProfile.futureGoals === 'government_jobs' ? 'Government Jobs' :
-                result.userProfile.futureGoals === 'private_sector' ? 'Private Sector' :
-                'Skill-based Career'
+                  result.userProfile.futureGoals === 'government_jobs' ? 'Government Jobs' :
+                    result.userProfile.futureGoals === 'private_sector' ? 'Private Sector' :
+                      'Skill-based Career'
               }</p>
             </div>
           </CardContent>
@@ -280,7 +280,7 @@ const Recommendations: React.FC = () => {
               <BookOpen className="h-6 w-6 mr-2 text-primary" />
               Recommended Courses
             </h2>
-            
+
             <div className="space-y-4">
               {result.recommendations.map((course, index) => (
                 <Card key={course.id} className="card-gradient shadow-soft hover:shadow-medium transition-smooth border-0">
@@ -305,33 +305,33 @@ const Recommendations: React.FC = () => {
                         </div>
                       </CardHeader>
                     </CollapsibleTrigger>
-                    
+
                     <CollapsibleContent>
                       <CardContent className="pt-0">
                         <div className="space-y-4">
                           <p className="text-muted-foreground">{course.description}</p>
-                          
+
                           <div className="flex items-center space-x-4 text-sm">
                             <div className="flex items-center space-x-1">
                               <Clock className="h-4 w-4 text-primary" />
                               <span>{course.duration}</span>
                             </div>
                           </div>
-                          
+
                           <div className="p-3 bg-success/10 rounded-lg">
-                            <p className="text-sm font-medium text-success-foreground mb-1">Why this suits you:</p>
+                            <p className="text-sm font-medium text-success mb-1">Why this suits you:</p>
                             <p className="text-sm text-muted-foreground">{course.rationale}</p>
                           </div>
-                          
+
                           <div className="p-3 bg-primary/10 rounded-lg">
                             <p className="text-sm font-medium text-primary mb-1">Career Scope:</p>
                             <p className="text-sm text-muted-foreground">{course.scope}</p>
                           </div>
-                          
+
                           {/* Job Titles Section */}
                           {courseJobTitles[course.name] && (
                             <div className="p-3 bg-accent/10 rounded-lg">
-                              <p className="text-sm font-medium text-accent-foreground mb-2 flex items-center">
+                              <p className="text-sm font-medium text-red mb-2 flex items-center">
                                 <Briefcase className="h-4 w-4 mr-1" />
                                 Possible Job Titles:
                               </p>
@@ -360,7 +360,7 @@ const Recommendations: React.FC = () => {
               <Building className="h-6 w-6 mr-2 text-primary" />
               Recommended Colleges
             </h2>
-            
+
             <div className="space-y-4">
               {result.colleges.slice(0, 8).map((college) => (
                 <Card key={college.id} className="card-gradient shadow-soft hover:shadow-medium transition-smooth border-0">
@@ -391,7 +391,7 @@ const Recommendations: React.FC = () => {
                         )}
                       </div>
                     </div>
-                    
+
                     <div className="space-y-2">
                       <p className="text-sm text-muted-foreground">
                         <strong>Contact:</strong> {college.contact}
@@ -447,19 +447,21 @@ const Recommendations: React.FC = () => {
         </div>
 
         {/* Next Steps */}
-        <Card className="mt-8 bg-primary text-primary-foreground border-0">
+        <Card className="mt-8 bg-primary dark:bg-primary-dark text-primary-foreground dark:text-primary-foreground-dark border-0">
           <CardContent className="p-6 text-center">
             <h3 className="text-xl font-bold mb-4">What's Next?</h3>
-            <p className="mb-6 opacity-90">
+            <p className="mb-6 opacity-90 text-gray-800 dark:text-gray-200">
               Ready to take the next step in your career journey? Explore more options and connect with counselors.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <Button variant="secondary" onClick={() => navigate('/quiz')}>
+              <Button
+                variant="secondary"
+                onClick={() => navigate('/quiz')} // scrolls to quiz section
+              >
                 Retake Assessment
               </Button>
-              <Button 
-                variant="outline" 
-                className="border-white text-white hover:bg-white hover:text-primary"
+              <Button
+                className="bg-white text-primary border border-primary hover:bg-white hover:text-primary dark:bg-gray-800 dark:text-white dark:border-gray-400"
                 onClick={handleFindMoreColleges}
                 disabled={loadingNearby}
               >
@@ -469,6 +471,7 @@ const Recommendations: React.FC = () => {
             </div>
           </CardContent>
         </Card>
+
 
         {/* Nearby Colleges Section */}
         {showNearbyColleges && nearbyColleges.length > 0 && (
@@ -511,7 +514,7 @@ const Recommendations: React.FC = () => {
                           </Button>
                         )}
                       </div>
-                      
+
                       <div className="space-y-2">
                         <p className="text-xs text-muted-foreground">
                           <strong>Contact:</strong> {college.contact}
@@ -541,7 +544,7 @@ const Recommendations: React.FC = () => {
             </CardContent>
           </Card>
         )}
-        
+
         {/* Government College Alert Dialog */}
         <AlertDialog open={showGovtCollegeAlert} onOpenChange={setShowGovtCollegeAlert}>
           <AlertDialogContent>
