@@ -57,26 +57,62 @@ export const JobTitles: React.FC<JobTitlesProps> = ({ courseName, stream }) => {
     try {
       const { data, error } = await supabase.functions.invoke('chatbot', {
         body: {
-          message: `Generate 4-5 realistic job titles for someone who completes ${courseName} course in ${stream} stream. Return only job titles separated by commas, no additional text.`,
-          userProfile: { firstName: 'Student', lastName: '', emailAddress: '' }
+          message: `List 5 realistic job titles for someone who completes ${courseName}. Return only a simple comma-separated list without numbering or formatting.`,
+          userProfile: undefined
         }
       });
 
       if (error) throw error;
 
-      if (data?.response) {
+      if (data?.response && !data.response.includes("I'm")) {
+        // Only process if response looks like job titles, not error messages
         const titles = data.response
           .split(',')
           .map((title: string) => title.trim())
-          .filter((title: string) => title.length > 0)
+          .filter((title: string) => title.length > 0 && title.length < 50)
           .slice(0, 5);
-        setJobTitles(titles);
+        
+        if (titles.length > 0) {
+          setJobTitles(titles);
+          return;
+        }
       }
+      
+      // Use predefined fallbacks based on course/stream
+      setJobTitles(getStaticJobTitles(courseName, stream));
     } catch (error) {
       console.error('Error generating AI job titles:', error);
-      // Default fallback
-      setJobTitles(['Career Professional', 'Specialist', 'Analyst']);
+      setJobTitles(getStaticJobTitles(courseName, stream));
     }
+  };
+
+  const getStaticJobTitles = (course: string, stream: string): string[] => {
+    const courseKey = course.toLowerCase();
+    const streamKey = stream.toLowerCase();
+
+    if (courseKey.includes('engineering') || courseKey.includes('b.tech')) {
+      return ['Software Engineer', 'Systems Engineer', 'Technical Consultant', 'Project Manager', 'Research Engineer'];
+    }
+    if (courseKey.includes('medical') || courseKey.includes('mbbs')) {
+      return ['Doctor', 'Medical Officer', 'Specialist', 'Healthcare Consultant', 'Medical Researcher'];
+    }
+    if (courseKey.includes('commerce') || courseKey.includes('b.com')) {
+      return ['Accountant', 'Financial Analyst', 'Business Analyst', 'Tax Consultant', 'Auditor'];
+    }
+    if (courseKey.includes('bca') || courseKey.includes('computer')) {
+      return ['Software Developer', 'Web Developer', 'System Administrator', 'IT Consultant', 'Database Administrator'];
+    }
+    if (courseKey.includes('mba') || courseKey.includes('business')) {
+      return ['Business Manager', 'Operations Manager', 'Marketing Manager', 'HR Manager', 'Strategy Consultant'];
+    }
+    if (streamKey.includes('arts')) {
+      return ['Content Writer', 'Social Worker', 'Teacher', 'Journalist', 'Government Officer'];
+    }
+    if (streamKey.includes('science')) {
+      return ['Research Scientist', 'Lab Technician', 'Quality Analyst', 'Science Teacher', 'Environmental Consultant'];
+    }
+    
+    return ['Professional', 'Specialist', 'Consultant', 'Analyst', 'Manager'];
   };
 
   if (loading) {

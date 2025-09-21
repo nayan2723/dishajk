@@ -156,10 +156,17 @@ Guidelines:
     const geminiData = await geminiResponse.json();
     console.log('Gemini response:', geminiData);
 
-    if (geminiData.candidates && geminiData.candidates[0]) {
+    if (geminiData.error) {
+      // Handle specific API errors
+      if (geminiData.error.code === 429) {
+        response = "I'm currently experiencing high demand. Please try again in a few minutes. In the meantime, I can help you with basic career guidance - what specific information are you looking for?";
+      } else {
+        response = "I'm experiencing some technical difficulties. Please try rephrasing your question or ask me about careers, courses, or colleges in J&K.";
+      }
+    } else if (geminiData.candidates && geminiData.candidates[0] && geminiData.candidates[0].content) {
       response = geminiData.candidates[0].content.parts[0].text;
     } else {
-      response = "I'm here to help! Could you please rephrase your question?";
+      response = "I didn't understand your question. Could you ask me about careers, courses, colleges, or scholarships in Jammu & Kashmir?";
     }
 
     return new Response(JSON.stringify({ 
