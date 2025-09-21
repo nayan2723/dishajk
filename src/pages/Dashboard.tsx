@@ -47,12 +47,17 @@ interface DashboardData {
   collegeTypeDistribution: { type: string; count: number; percentage: number }[];
   urbanRuralDistribution: { status: string; count: number; percentage: number }[];
   courseDistribution: { course: string; count: number }[];
+  performanceByDistrict: { district: string; avgScore: number; totalStudents: number }[];
+  monthlyTrend: { month: string; count: number; avgScore: number }[];
+  careerGoalsDistribution: { goal: string; count: number; percentage: number }[];
+  topDistricts: { district: string; students: number; colleges: number }[];
   recentQuizzes: Array<{
     id: string;
     student_name: string;
     location: string;
     district: string;
     stream: string;
+    score: number;
     completed_at: string;
   }>;
 }
@@ -75,6 +80,10 @@ const Dashboard: React.FC = () => {
     Private: 'hsl(200, 75%, 55%)',
     Urban: 'hsl(240, 60%, 60%)',
     Rural: 'hsl(30, 80%, 55%)',
+    higher_studies: 'hsl(200, 75%, 55%)',
+    immediate_job: 'hsl(280, 75%, 60%)',
+    entrepreneurship: 'hsl(25, 85%, 60%)',
+    skill_development: 'hsl(160, 75%, 50%)',
     Unknown: 'hsl(var(--muted))'
   };
 
@@ -126,6 +135,10 @@ const Dashboard: React.FC = () => {
         collegeTypeDistribution: [],
         urbanRuralDistribution: [],
         courseDistribution: [],
+        performanceByDistrict: [],
+        monthlyTrend: [],
+        careerGoalsDistribution: [],
+        topDistricts: [],
         recentQuizzes: []
       };
     }
@@ -237,6 +250,96 @@ const Dashboard: React.FC = () => {
       .sort((a, b) => b.count - a.count)
       .slice(0, 10);
 
+    // Performance by district
+    const districtPerformance: Record<string, { totalScore: number; count: number }> = {};
+    quizSessions.forEach(session => {
+      const district = session.district || 'Unknown';
+      const score = session.score || 0;
+      
+      if (!districtPerformance[district]) {
+        districtPerformance[district] = { totalScore: 0, count: 0 };
+      }
+      
+      districtPerformance[district].totalScore += score;
+      districtPerformance[district].count += 1;
+    });
+
+    const performanceByDistrict = Object.entries(districtPerformance)
+      .map(([district, data]) => ({
+        district,
+        avgScore: Math.round(data.totalScore / data.count),
+        totalStudents: data.count
+      }))
+      .sort((a, b) => b.avgScore - a.avgScore)
+      .slice(0, 10);
+
+    // Monthly trend analysis
+    const monthlyData: Record<string, { count: number; totalScore: number }> = {};
+    quizSessions.forEach(session => {
+      const date = new Date(session.completed_at);
+      const monthKey = date.toLocaleDateString('en-US', { month: 'short', year: 'numeric' });
+      const score = session.score || 0;
+      
+      if (!monthlyData[monthKey]) {
+        monthlyData[monthKey] = { count: 0, totalScore: 0 };
+      }
+      
+      monthlyData[monthKey].count += 1;
+      monthlyData[monthKey].totalScore += score;
+    });
+
+    const monthlyTrend = Object.entries(monthlyData)
+      .map(([month, data]) => ({
+        month,
+        count: data.count,
+        avgScore: Math.round(data.totalScore / data.count)
+      }))
+      .sort((a, b) => new Date(a.month).getTime() - new Date(b.month).getTime())
+      .slice(-6);
+
+    // Career goals distribution
+    const careerGoalsCounts: Record<string, number> = {};
+    quizSessions.forEach(session => {
+      const goals = session.user_profile?.futureGoals || 'Unknown';
+      careerGoalsCounts[goals] = (careerGoalsCounts[goals] || 0) + 1;
+    });
+
+    const careerGoalsDistribution = Object.entries(careerGoalsCounts).map(([goal, count]) => ({
+      goal: goal.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase()),
+      count: Number(count),
+      percentage: totalStudents > 0 ? Math.round((Number(count) / totalStudents) * 100) : 0
+    }));
+
+    // Top districts comparison
+    const districtComparison: Record<string, { students: number; colleges: number }> = {};
+    
+    // Count students by district
+    quizSessions.forEach(session => {
+      const district = session.district || 'Unknown';
+      if (!districtComparison[district]) {
+        districtComparison[district] = { students: 0, colleges: 0 };
+      }
+      districtComparison[district].students += 1;
+    });
+    
+    // Count colleges by district
+    colleges.forEach(college => {
+      const district = college.District || 'Unknown';
+      if (!districtComparison[district]) {
+        districtComparison[district] = { students: 0, colleges: 0 };
+      }
+      districtComparison[district].colleges += 1;
+    });
+
+    const topDistricts = Object.entries(districtComparison)
+      .map(([district, data]) => ({
+        district,
+        students: data.students,
+        colleges: data.colleges
+      }))
+      .sort((a, b) => (b.students + b.colleges) - (a.students + a.colleges))
+      .slice(0, 8);
+
     // Recent quizzes (last 8)
     const recentQuizzes = quizSessions.slice(0, 8).map(session => ({
       id: session.id,
@@ -244,6 +347,7 @@ const Dashboard: React.FC = () => {
       location: session.location,
       district: session.district,
       stream: session.stream,
+      score: session.score || 0,
       completed_at: session.completed_at
     }));
 
@@ -256,6 +360,10 @@ const Dashboard: React.FC = () => {
       collegeTypeDistribution,
       urbanRuralDistribution,
       courseDistribution,
+      performanceByDistrict,
+      monthlyTrend,
+      careerGoalsDistribution,
+      topDistricts,
       recentQuizzes
     };
   }, [quizSessions, colleges, loading]);
@@ -328,6 +436,9 @@ const Dashboard: React.FC = () => {
                   <p className="text-sm font-medium text-muted-foreground">Student Assessments</p>
                   <p className="text-2xl font-bold">
                     {loading ? 'Loading...' : String(dashboardStats.totalStudents)}
+                  </p>
+                  <p className="text-xs text-muted-foreground mt-1">
+                    Avg Score: {loading ? '-' : Math.round(dashboardStats.recentQuizzes.reduce((sum, q) => sum + q.score, 0) / Math.max(dashboardStats.recentQuizzes.length, 1))}%
                   </p>
                 </div>
                 <div className="p-2 rounded-full bg-warning/10 text-warning">
@@ -414,75 +525,205 @@ const Dashboard: React.FC = () => {
           </Card>
         </div>
 
-        {/* Additional Analytics */}
-        <div className="grid lg:grid-cols-2 gap-8 mb-8">
-          {/* Urban vs Rural Distribution */}
+        {/* Professional Analytics Section */}
+        <div className="grid lg:grid-cols-3 gap-8 mb-8">
+          {/* Performance by District */}
           <Card className="card-gradient shadow-medium border-0">
             <CardHeader>
               <CardTitle className="flex items-center">
-                <Globe className="h-5 w-5 mr-2" />
-                Urban vs Rural Distribution
+                <TrendingUp className="h-5 w-5 mr-2" />
+                Top Performing Districts
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="h-80">
-                <ResponsiveContainer width="100%" height="100%">
-                  <PieChart>
-                    <Pie
-                      data={dashboardStats.urbanRuralDistribution}
-                      cx="50%"
-                      cy="50%"
-                      innerRadius={60}
-                      outerRadius={120}
-                      paddingAngle={5}
-                      dataKey="count"
-                    >
-                      {dashboardStats.urbanRuralDistribution.map((entry, index) => (
-                        <Cell key={`cell-${index}`} fill={COLORS[entry.status] || 'hsl(var(--muted))'} />
-                      ))}
-                    </Pie>
-                    <Tooltip formatter={(value: any, name: any, props: any) => [value, props.payload.status]} />
-                  </PieChart>
-                </ResponsiveContainer>
-              </div>
-              <div className="flex flex-wrap gap-2 mt-4">
-                {dashboardStats.urbanRuralDistribution.map((item) => (
-                  <div key={item.status} className="flex items-center space-x-2">
-                    <div 
-                      className="w-3 h-3 rounded-full" 
-                      style={{ backgroundColor: COLORS[item.status] || 'hsl(var(--muted))' }}
-                    />
-                    <span className="text-sm">{item.status}: {String(item.count)} ({item.percentage}%)</span>
+              <div className="space-y-4">
+                {dashboardStats.performanceByDistrict.slice(0, 6).map((item, index) => (
+                  <div key={item.district} className="flex items-center justify-between p-3 rounded-lg bg-muted/30">
+                    <div className="flex items-center space-x-3">
+                      <div className="text-2xl font-bold text-primary">#{index + 1}</div>
+                      <div>
+                        <p className="font-semibold">{item.district}</p>
+                        <p className="text-sm text-muted-foreground">{item.totalStudents} students</p>
+                      </div>
+                    </div>
+                    <div className="text-right">
+                      <p className="text-lg font-bold text-success">{item.avgScore}%</p>
+                      <p className="text-xs text-muted-foreground">Avg Score</p>
+                    </div>
                   </div>
                 ))}
               </div>
             </CardContent>
           </Card>
 
-          {/* Top Course Offerings */}
+          {/* Career Goals Distribution */}
           <Card className="card-gradient shadow-medium border-0">
             <CardHeader>
               <CardTitle className="flex items-center">
-                <BookOpen className="h-5 w-5 mr-2" />
-                Popular Course Offerings
+                <Award className="h-5 w-5 mr-2" />
+                Career Aspirations
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="h-64">
+                <ResponsiveContainer width="100%" height="100%">
+                  <PieChart>
+                    <Pie
+                      data={dashboardStats.careerGoalsDistribution}
+                      cx="50%"
+                      cy="50%"
+                      innerRadius={40}
+                      outerRadius={80}
+                      paddingAngle={3}
+                      dataKey="count"
+                    >
+                      {dashboardStats.careerGoalsDistribution.map((entry, index) => (
+                        <Cell key={`cell-${index}`} fill={COLORS[entry.goal.toLowerCase().replace(' ', '_')] || 'hsl(var(--muted))'} />
+                      ))}
+                    </Pie>
+                    <Tooltip formatter={(value: any, name: any, props: any) => [value, props.payload.goal]} />
+                  </PieChart>
+                </ResponsiveContainer>
+              </div>
+              <div className="space-y-2 mt-4">
+                {dashboardStats.careerGoalsDistribution.map((item) => (
+                  <div key={item.goal} className="flex items-center justify-between">
+                    <div className="flex items-center space-x-2">
+                      <div 
+                        className="w-3 h-3 rounded-full" 
+                        style={{ backgroundColor: COLORS[item.goal.toLowerCase().replace(' ', '_')] || 'hsl(var(--muted))' }}
+                      />
+                      <span className="text-sm">{item.goal}</span>
+                    </div>
+                    <span className="text-sm font-semibold">{item.percentage}%</span>
+                  </div>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* District Overview */}
+          <Card className="card-gradient shadow-medium border-0">
+            <CardHeader>
+              <CardTitle className="flex items-center">
+                <BarChart3 className="h-5 w-5 mr-2" />
+                District Overview
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                {dashboardStats.topDistricts.slice(0, 6).map((item) => (
+                  <div key={item.district} className="flex items-center justify-between p-3 rounded-lg bg-muted/30">
+                    <div>
+                      <p className="font-semibold">{item.district}</p>
+                      <div className="flex space-x-4 text-sm text-muted-foreground">
+                        <span>{item.students} students</span>
+                        <span>{item.colleges} colleges</span>
+                      </div>
+                    </div>
+                    <div className="text-right">
+                      <div className="w-16 h-2 rounded-full bg-muted overflow-hidden">
+                        <div 
+                          className="h-full bg-primary rounded-full transition-all"
+                          style={{ width: `${Math.min((item.students / Math.max(...dashboardStats.topDistricts.map(d => d.students))) * 100, 100)}%` }}
+                        />
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Trend Analysis and Charts */}
+        <div className="grid lg:grid-cols-2 gap-8 mb-8">
+          {/* Monthly Trend */}
+          <Card className="card-gradient shadow-medium border-0">
+            <CardHeader>
+              <CardTitle className="flex items-center">
+                <Calendar className="h-5 w-5 mr-2" />
+                Assessment Trends
               </CardTitle>
             </CardHeader>
             <CardContent>
               <div className="h-80">
                 <ResponsiveContainer width="100%" height="100%">
-                  <BarChart data={dashboardStats.courseDistribution} layout="horizontal">
+                  <AreaChart data={dashboardStats.monthlyTrend}>
                     <CartesianGrid strokeDasharray="3 3" />
-                    <XAxis type="number" />
-                    <YAxis 
-                      dataKey="course" 
-                      type="category" 
-                      tick={{ fontSize: 10 }}
-                      width={80}
-                    />
+                    <XAxis dataKey="month" />
+                    <YAxis yAxisId="count" orientation="left" />
+                    <YAxis yAxisId="score" orientation="right" />
                     <Tooltip />
-                    <Bar dataKey="count" fill="hsl(var(--secondary))" />
-                  </BarChart>
+                    <Area 
+                      yAxisId="count"
+                      type="monotone" 
+                      dataKey="count" 
+                      stroke="hsl(var(--primary))" 
+                      fill="hsl(var(--primary))"
+                      fillOpacity={0.3}
+                      name="Students"
+                    />
+                    <Bar 
+                      yAxisId="score"
+                      dataKey="avgScore" 
+                      fill="hsl(var(--secondary))"
+                      name="Avg Score %"
+                    />
+                  </AreaChart>
                 </ResponsiveContainer>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* College Distribution Summary */}
+          <Card className="card-gradient shadow-medium border-0">
+            <CardHeader>
+              <CardTitle className="flex items-center">
+                <Globe className="h-5 w-5 mr-2" />
+                College Accessibility
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="grid grid-cols-2 gap-4 mb-6">
+                <div className="text-center p-4 rounded-lg bg-success/10">
+                  <p className="text-2xl font-bold text-success">
+                    {dashboardStats.urbanRuralDistribution.find(d => d.status === 'Urban')?.count || 0}
+                  </p>
+                  <p className="text-sm text-muted-foreground">Urban Colleges</p>
+                </div>
+                <div className="text-center p-4 rounded-lg bg-warning/10">
+                  <p className="text-2xl font-bold text-warning">
+                    {dashboardStats.urbanRuralDistribution.find(d => d.status === 'Rural')?.count || 0}
+                  </p>
+                  <p className="text-sm text-muted-foreground">Rural Colleges</p>
+                </div>
+              </div>
+              <div className="space-y-3">
+                <div className="flex justify-between items-center">
+                  <span className="text-sm font-medium">Government Institutions</span>
+                  <div className="flex items-center space-x-2">
+                    <div className="w-20 h-2 rounded-full bg-muted overflow-hidden">
+                      <div 
+                        className="h-full bg-success rounded-full"
+                        style={{ width: `${dashboardStats.collegeTypeDistribution.find(t => t.type === 'Government')?.percentage || 0}%` }}
+                      />
+                    </div>
+                    <span className="text-sm font-semibold">{dashboardStats.collegeTypeDistribution.find(t => t.type === 'Government')?.percentage || 0}%</span>
+                  </div>
+                </div>
+                <div className="flex justify-between items-center">
+                  <span className="text-sm font-medium">Private Institutions</span>
+                  <div className="flex items-center space-x-2">
+                    <div className="w-20 h-2 rounded-full bg-muted overflow-hidden">
+                      <div 
+                        className="h-full bg-info rounded-full"
+                        style={{ width: `${dashboardStats.collegeTypeDistribution.find(t => t.type === 'Private')?.percentage || 0}%` }}
+                      />
+                    </div>
+                    <span className="text-sm font-semibold">{dashboardStats.collegeTypeDistribution.find(t => t.type === 'Private')?.percentage || 0}%</span>
+                  </div>
+                </div>
               </div>
             </CardContent>
           </Card>
@@ -600,6 +841,9 @@ const Dashboard: React.FC = () => {
                             <h3 className="font-semibold text-lg">{quiz.student_name}</h3>
                             <Badge variant="outline" className="bg-primary/10 text-primary border-primary/20">
                               {quiz.stream}
+                            </Badge>
+                            <Badge variant="secondary" className="bg-success/10 text-success border-success/20">
+                              {quiz.score}%
                             </Badge>
                           </div>
                           <div className="space-y-1 text-sm text-muted-foreground">
