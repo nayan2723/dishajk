@@ -231,4 +231,88 @@ All colors MUST be HSL.
       transform: translateY(-10px) translateX(10px);
     }
   }
+
+  .animate-pulse {
+    animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+  }
+
+  .story-link {
+    position: relative;
+    display: inline-block;
+  }
+
+  .story-link::after {
+    content: '';
+    position: absolute;
+    width: 100%;
+    transform: scaleX(0);
+    height: 2px;
+    bottom: 0;
+    left: 0;
+    background-color: hsl(var(--primary));
+    transform-origin: bottom right;
+    transition: transform 0.25s ease-out;
+  }
+
+  .story-link:hover::after {
+    transform: scaleX(1);
+    transform-origin: bottom left;
+  }
+
+  /* React Flow Custom Styles */
+  .react-flow__node.react-flow__node-custom {
+    background: transparent;
+    border: none;
+  }
+
+  .react-flow__edge-path {
+    stroke: hsl(var(--primary));
+    stroke-width: 2;
+  }
+
+  .react-flow__connectionline {
+    stroke: hsl(var(--primary));
+    stroke-width: 2;
+  }
+
+  .react-flow__handle {
+    background: hsl(var(--primary));
+    border: 2px solid hsl(var(--background));
+    width: 8px;
+    height: 8px;
+  }
+
+  .react-flow__controls {
+    background: hsl(var(--background) / 0.8);
+    backdrop-filter: blur(8px);
+    border: 1px solid hsl(var(--border));
+    border-radius: var(--radius);
+  }
+
+  .react-flow__controls-button {
+    background: transparent;
+    border: none;
+    color: hsl(var(--foreground));
+    transition: var(--transition-smooth);
+  }
+
+  .react-flow__controls-button:hover {
+    background: hsl(var(--accent) / 0.1);
+    color: hsl(var(--accent));
+  }
+
+  .react-flow__minimap {
+    background: hsl(var(--background) / 0.8);
+    backdrop-filter: blur(8px);
+    border: 1px solid hsl(var(--border));
+    border-radius: var(--radius);
+  }
+
+  .react-flow__panel {
+    background: hsl(var(--background) / 0.8);
+    backdrop-filter: blur(8px);
+    border: 1px solid hsl(var(--border));
+    border-radius: var(--radius);
+    color: hsl(var(--foreground));
+  }
 }

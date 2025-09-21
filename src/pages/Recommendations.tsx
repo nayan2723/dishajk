@@ -25,7 +25,7 @@ import { generatePDFReport } from '../utils/pdfGenerator';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { College } from '../types';
-import { CareerFlowchart } from '@/components/CareerFlowchart';
+import { InteractiveCareerFlowchart } from '@/components/InteractiveCareerFlowchart';
 import { JobTitles } from '@/components/JobTitles';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { AlertCircle } from 'lucide-react';
@@ -443,7 +443,7 @@ const Recommendations: React.FC = () => {
 
         {/* AI-Generated Career Flowchart */}
         <div className="mt-8">
-          <CareerFlowchart quizResult={result} studentName={studentName || "Student"} />
+          <InteractiveCareerFlowchart quizResult={result} studentName={studentName || "Student"} />
         </div>
 
         {/* Next Steps */}
