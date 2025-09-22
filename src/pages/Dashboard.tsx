@@ -37,6 +37,7 @@ import {
   BarChart3
 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
+import { ROIVisualization } from '@/components/ROIVisualization';
 
 interface DashboardData {
   totalStudents: number;
@@ -807,6 +808,17 @@ const Dashboard: React.FC = () => {
               </div>
             </CardContent>
           </Card>
+        </div>
+
+        {/* Return on Investment Analysis */}
+        <div className="mb-8">
+          <div className="text-center mb-6">
+            <h2 className="text-2xl font-bold mb-2">Return on Investment Analysis</h2>
+            <p className="text-muted-foreground">
+              Compare course fees with expected post-graduation salaries across different career paths
+            </p>
+          </div>
+          <ROIVisualization />
         </div>
 
         {/* Recent Student Activity */}
