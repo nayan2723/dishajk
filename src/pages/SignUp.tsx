@@ -1,12 +1,16 @@
+import React from 'react';
 import { SignUp } from "@clerk/clerk-react";
+import { useTranslation } from 'react-i18next';
 
 const SignUpPage = () => {
+  const { t } = useTranslation();
+  
   return (
     <div className="min-h-screen flex items-center justify-center bg-background">
       <div className="w-full max-w-md p-8">
         <div className="text-center mb-8">
-          <h1 className="text-2xl font-bold text-foreground mb-2">Join Disha</h1>
-          <p className="text-muted-foreground">Create your account and start your career journey</p>
+          <h1 className="text-2xl font-bold text-foreground mb-2">{t('auth.joinDisha')}</h1>
+          <p className="text-muted-foreground">{t('auth.signUpSubtitle')}</p>
         </div>
         <div className="flex justify-center">
           <SignUp 

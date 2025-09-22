@@ -1,12 +1,16 @@
+import React from 'react';
 import { SignIn } from "@clerk/clerk-react";
+import { useTranslation } from 'react-i18next';
 
 const SignInPage = () => {
+  const { t } = useTranslation();
+  
   return (
     <div className="min-h-screen flex items-center justify-center bg-background">
       <div className="w-full max-w-md p-8">
         <div className="text-center mb-8">
-          <h1 className="text-2xl font-bold text-foreground mb-2">Welcome Back</h1>
-          <p className="text-muted-foreground">Sign in to your Disha account</p>
+          <h1 className="text-2xl font-bold text-foreground mb-2">{t('auth.welcomeBack')}</h1>
+          <p className="text-muted-foreground">{t('auth.signInSubtitle')}</p>
         </div>
         <div className="flex justify-center">
           <SignIn 

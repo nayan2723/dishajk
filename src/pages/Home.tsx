@@ -9,21 +9,24 @@ import { Label } from '@/components/ui/label';
 import { ClipboardList, Target, BarChart3, Users, Award, TrendingUp, Star, ArrowRight, Mail, MapPin, Phone, Eye, Heart, Lightbulb, Loader2 } from 'lucide-react';
 import { useForm } from 'react-hook-form';
 import { toast } from 'sonner';
+import { useTranslation } from 'react-i18next';
 import HeroCarousel from '@/components/HeroCarousel';
 import { HeroGeometric } from '@/components/ui/shape-landing-hero';
 import { supabase } from '@/integrations/supabase/client';
 import logo from "@/assets/logo-img.png"
 const Home: React.FC = () => {
+  const { t } = useTranslation();
+  
   const features = [
     {
       icon: ClipboardList,
-      title: 'Interactive Quiz',
-      description: 'Comprehensive psychometric assessment to understand your interests and skills',
+      title: t('home.features.assessment'),
+      description: t('home.features.assessmentDesc'),
     },
     {
       icon: Target,
-      title: 'Personalized Recommendations',
-      description: 'Get tailored stream and course suggestions based on your unique profile',
+      title: t('home.features.guidance'),
+      description: t('home.features.guidanceDesc'),
     },
     {
       icon: Award,
@@ -32,8 +35,8 @@ const Home: React.FC = () => {
     },
     {
       icon: TrendingUp,
-      title: 'Career Insights',
-      description: 'Understand career prospects and growth opportunities in different fields',
+      title: t('home.features.resources'),
+      description: t('home.features.resourcesDesc'),
     },
   ];
 
@@ -94,8 +97,8 @@ const Home: React.FC = () => {
       {/* Hero Section with Geometric Shapes */}
       <HeroGeometric
         badge="Disha - Career Guidance"
-        title1="Your Personalized Career &"
-        title2="Education Advisor"
+        title1={t('home.title')}
+        title2={t('home.subtitle')}
       />
 
       {/* Hero Carousel Section */}
@@ -109,7 +112,7 @@ const Home: React.FC = () => {
             viewport={{ once: true }}
           >
             <h2 className="text-3xl md:text-4xl font-bold mb-4">
-              Discover Your Path
+              {t('home.description')}
             </h2>
             <p className="text-xl text-muted-foreground max-w-2xl mx-auto mb-8">
               Helping J&K students choose the right stream, college, and career path through personalized guidance
@@ -123,7 +126,7 @@ const Home: React.FC = () => {
                 className="rounded-full text-lg px-8 py-6 group"
               >
                 <Link to="/quiz" className="flex items-center space-x-2">
-                  <span>Start Your Journey</span>
+                  <span>{t('home.getStarted')}</span>
                   <ArrowRight className="h-5 w-5 group-hover:translate-x-1 transition-transform duration-200" />
                 </Link>
               </Button>
@@ -134,7 +137,7 @@ const Home: React.FC = () => {
                 asChild
                 className="rounded-full text-lg px-8 py-6"
               >
-                <Link to="/dashboard">Explore Features</Link>
+                <Link to="/dashboard">{t('home.learnMore')}</Link>
               </Button>
             </div>
           </motion.div>

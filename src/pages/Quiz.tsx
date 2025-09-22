@@ -11,6 +11,7 @@ import { useQuiz } from '../context/QuizContext';
 import { quizQuestions } from '../data/quizData';
 import QuizProgress from '../components/QuizProgress';
 import { useToast } from '@/hooks/use-toast';
+import { useTranslation } from 'react-i18next';
 import StudentDetailsForm from '../components/StudentDetailsForm';
 import Recommendations from './Recommendations';
 
@@ -18,6 +19,7 @@ const Quiz: React.FC = () => {
   const { state, dispatch } = useQuiz();
   const navigate = useNavigate();
   const { toast } = useToast();
+  const { t } = useTranslation();
   const [textInputValue, setTextInputValue] = useState('');
   const [showStudentForm, setShowStudentForm] = useState(false);
   const [showRecommendations, setShowRecommendations] = useState(false);
@@ -116,9 +118,9 @@ const Quiz: React.FC = () => {
       <div className="container mx-auto max-w-4xl">
         {/* Header */}
         <div className="text-center mb-8">
-          <h1 className="text-3xl md:text-4xl font-bold mb-4">Career Assessment Quiz</h1>
+          <h1 className="text-3xl md:text-4xl font-bold mb-4">{t('quiz.title')}</h1>
           <p className="text-lg text-muted-foreground">
-            Answer these questions honestly to get personalized career recommendations
+            {t('quiz.subtitle')}
           </p>
         </div>
 
@@ -196,11 +198,11 @@ const Quiz: React.FC = () => {
             className="flex items-center space-x-2"
           >
             <ChevronLeft className="h-4 w-4" />
-            <span>Previous</span>
+            <span>{t('common.previous')}</span>
           </Button>
 
           <div className="text-sm text-muted-foreground">
-            {state.answers.length} of {quizQuestions.length} answered
+            {state.answers.length} {t('quiz.of')} {quizQuestions.length} answered
           </div>
 
           <Button
@@ -211,11 +213,11 @@ const Quiz: React.FC = () => {
             {isLastQuestion ? (
               <>
                 <Send className="h-4 w-4" />
-                <span>Submit</span>
+                <span>{t('common.submit')}</span>
               </>
             ) : (
               <>
-                <span>Next</span>
+                <span>{t('common.next')}</span>
                 <ChevronRight className="h-4 w-4" />
               </>
             )}

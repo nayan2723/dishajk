@@ -23,6 +23,7 @@ import {
 import { useQuiz } from '../context/QuizContext';
 import { generatePDFReport } from '../utils/pdfGenerator';
 import { useToast } from '@/hooks/use-toast';
+import { useTranslation } from 'react-i18next';
 import { supabase } from '@/integrations/supabase/client';
 import { College } from '../types';
 import { InteractiveCareerFlowchart } from '@/components/InteractiveCareerFlowchart';
@@ -35,6 +36,7 @@ const Recommendations: React.FC = () => {
   const { state, calculateResult } = useQuiz();
   const navigate = useNavigate();
   const { toast } = useToast();
+  const { t } = useTranslation();
   const [studentName, setStudentName] = useState('');
   const [result, setResult] = useState(null);
   const [expandedCourse, setExpandedCourse] = useState<number | null>(null);
@@ -238,9 +240,9 @@ const Recommendations: React.FC = () => {
       <div className="container mx-auto max-w-6xl">
         {/* Header */}
         <div className="text-center mb-8">
-          <h1 className="text-3xl md:text-4xl font-bold mb-4">Your Personalized Recommendations</h1>
+          <h1 className="text-3xl md:text-4xl font-bold mb-4">{t('recommendations.title')}</h1>
           <p className="text-lg text-muted-foreground">
-            Based on your assessment, here's your ideal career path
+            {t('recommendations.subtitle')}
           </p>
         </div>
 
@@ -278,7 +280,7 @@ const Recommendations: React.FC = () => {
           <div>
             <h2 className="text-2xl font-bold mb-6 flex items-center">
               <BookOpen className="h-6 w-6 mr-2 text-primary" />
-              Recommended Courses
+              {t('recommendations.title')}
             </h2>
 
             <div className="space-y-4">
@@ -419,7 +421,7 @@ const Recommendations: React.FC = () => {
           <CardHeader>
             <CardTitle className="flex items-center">
               <Download className="h-6 w-6 mr-2" />
-              Download Detailed Report
+              {t('common.download')} Detailed Report
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">

@@ -5,6 +5,8 @@ import { GraduationCap, Home, ClipboardList, Target, BarChart3, Menu, X } from '
 import { SignedIn, SignedOut, UserButton } from "@clerk/clerk-react";
 import ThemeToggle from './ThemeToggle';
 import { Chatbot } from './Chatbot';
+import { LanguageSelector } from './LanguageSelector';
+import { useTranslation } from 'react-i18next';
 import logo from '../assets/logo-img.png';
 
 interface LayoutProps {
@@ -14,12 +16,13 @@ interface LayoutProps {
 const Layout: React.FC<LayoutProps> = ({ children }) => {
   const location = useLocation();
   const [mobileOpen, setMobileOpen] = useState(false);
+  const { t } = useTranslation();
 
   const navItems = [
-    { path: '/', label: 'Home', icon: Home },
-    { path: '/quiz', label: 'Take Quiz', icon: ClipboardList },
-    { path: '/recommendations', label: 'Recommendations', icon: Target },
-    { path: '/dashboard', label: 'Dashboard', icon: BarChart3 },
+    { path: '/', label: t('common.home'), icon: Home },
+    { path: '/quiz', label: t('common.quiz'), icon: ClipboardList },
+    { path: '/recommendations', label: t('common.recommendations'), icon: Target },
+    { path: '/dashboard', label: t('common.dashboard'), icon: BarChart3 },
   ];
 
   return (
@@ -72,10 +75,10 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
             <SignedOut>
               <div className="flex items-center space-x-2">
                 <Button variant="ghost" size="sm" asChild>
-                  <Link to="/sign-in">Sign In</Link>
+                  <Link to="/sign-in">{t('common.signIn')}</Link>
                 </Button>
                 <Button size="sm" asChild>
-                  <Link to="/sign-up">Sign Up</Link>
+                  <Link to="/sign-up">{t('common.signUp')}</Link>
                 </Button>
               </div>
             </SignedOut>
@@ -94,6 +97,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
               />
             </SignedIn>
 
+            <LanguageSelector />
             <ThemeToggle />
           </div>
 
@@ -135,14 +139,14 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
                   className="px-3 py-2 rounded-md hover:bg-accent"
                   onClick={() => setMobileOpen(false)}
                 >
-                  Sign In
+                  {t('common.signIn')}
                 </Link>
                 <Link
                   to="/sign-up"
                   className="px-3 py-2 rounded-md bg-primary text-primary-foreground text-center"
                   onClick={() => setMobileOpen(false)}
                 >
-                  Sign Up
+                  {t('common.signUp')}
                 </Link>
               </div>
             </SignedOut>
@@ -150,6 +154,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
             <SignedIn>
               <div className="flex items-center space-x-3 px-3 py-2">
                 <UserButton />
+                <LanguageSelector />
                 <ThemeToggle />
               </div>
             </SignedIn>
@@ -169,13 +174,13 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
             <div className="flex items-center space-x-2 mb-4 md:mb-0">
               <GraduationCap className="h-5 w-5 text-primary" />
               <span className="text-sm text-muted-foreground">
-                © 2025 Disha - Personalized Career & Education Advisor
+                {t('common.copyright')}
               </span>
             </div>
             <div className="flex space-x-4 text-sm text-muted-foreground">
-              <a href="#about" className="hover:text-primary transition-smooth">About</a>
-              <a href="#contact" className="hover:text-primary transition-smooth">Contact</a>
-              <a href="#" className="hover:text-primary transition-smooth">Privacy</a>
+              <a href="#about" className="hover:text-primary transition-smooth">{t('common.about')}</a>
+              <a href="#contact" className="hover:text-primary transition-smooth">{t('common.contact')}</a>
+              <a href="#" className="hover:text-primary transition-smooth">{t('common.privacy')}</a>
             </div>
           </div>
         </div>

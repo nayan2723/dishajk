@@ -1,0 +1,86 @@
+{
+  "common": {
+    "home": "Home",
+    "quiz": "Quiz",
+    "recommendations": "Recommendations", 
+    "dashboard": "Dashboard",
+    "signIn": "Sign In",
+    "signUp": "Sign Up",
+    "signOut": "Sign Out",
+    "about": "About",
+    "contact": "Contact",
+    "privacy": "Privacy",
+    "terms": "Terms & Conditions",
+    "copyright": "© 2024 Disha Platform. All rights reserved.",
+    "loading": "Loading...",
+    "error": "Error",
+    "success": "Success",
+    "cancel": "Cancel",
+    "submit": "Submit",
+    "next": "Next",
+    "previous": "Previous",
+    "save": "Save",
+    "delete": "Delete",
+    "edit": "Edit",
+    "download": "Download",
+    "generate": "Generate",
+    "language": "Language"
+  },
+  "home": {
+    "title": "Disha - One Stop Career Guidance",
+    "subtitle": "Personalized Career & Education Advisor",
+    "description": "Discover your ideal career path through comprehensive assessment and personalized recommendations tailored just for you.",
+    "getStarted": "Get Started",
+    "learnMore": "Learn More",
+    "features": {
+      "assessment": "Comprehensive Assessment",
+      "assessmentDesc": "Take our detailed quiz to understand your strengths, interests, and aptitudes",
+      "guidance": "Personalized Guidance", 
+      "guidanceDesc": "Get customized career recommendations based on your profile and aspirations",
+      "resources": "Rich Resources",
+      "resourcesDesc": "Access extensive information about courses, colleges, and career paths"
+    }
+  },
+  "quiz": {
+    "title": "Career Assessment Quiz",
+    "subtitle": "Answer these questions to get personalized career recommendations",
+    "question": "Question",
+    "of": "of",
+    "finish": "Finish Quiz",
+    "progress": "Progress"
+  },
+  "recommendations": {
+    "title": "Your Career Recommendations",
+    "subtitle": "Based on your quiz responses, here are personalized career paths for you",
+    "careerFlowchart": "Career Flowchart",
+    "generateFlowchart": "Generate Interactive Flowchart",
+    "downloadFlowchart": "Download Flowchart",
+    "selectCourse": "Select a course to view its career roadmap",
+    "noRecommendations": "Complete the quiz first to see your personalized recommendations"
+  },
+  "dashboard": {
+    "title": "Dashboard",
+    "welcome": "Welcome to your dashboard",
+    "quizCompleted": "Quiz Completed",
+    "recommendationsAvailable": "Recommendations Available",
+    "profileComplete": "Profile Complete"
+  },
+  "auth": {
+    "welcomeBack": "Welcome Back",
+    "signInSubtitle": "Sign in to your Disha account",
+    "joinDisha": "Join Disha", 
+    "signUpSubtitle": "Create your account and start your career journey",
+    "agreeTerms": "By signing up, you agree to our Terms & Conditions"
+  },
+  "terms": {
+    "title": "Terms & Conditions",
+    "lastUpdated": "Last updated: March 2024",
+    "accept": "I Accept Terms & Conditions",
+    "mustAccept": "You must accept the terms and conditions to continue"
+  },
+  "notFound": {
+    "title": "404",
+    "subtitle": "Oops! Page not found",
+    "returnHome": "Return to Home"
+  }
+}
